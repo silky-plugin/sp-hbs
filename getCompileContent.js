@@ -68,8 +68,14 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
       let template = _handlebars.compile(content);
       //编译成功，标记状态码
       crossData.status = 200;
+      //挂载的全局变量是否和获取到页面数据全局变量有冲突。
+      if(context[dataConfig.globalRoot]){
+        cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloabl-root 挂载点 一致， 全局配置将覆盖此字段！！！`)
+      }
+      let gloablVar = {}
+      gloablVar[dataConfig.globalRoot] = dataConfig.global
       //继承全局变量
-      _.extend(context, dataConfig.globalData)
+      _.extend(context, gloablVar)
       asyncNext(null, crossData, template(context))
     }catch(e){
       asyncNext(e)

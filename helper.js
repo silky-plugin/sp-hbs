@@ -1,15 +1,16 @@
 'use strict';
-module.exports = (Handlebars, helperReigerterQueue)=>{
-  //跳过handlebar编译
-  Handlebars.registerHelper('raw', function(options) {
-    return options.fn();
-  
-  });
-  
+const _import = require('./helper/imports-helper')
+const _raw = require('./helper/raw')
+
+module.exports = (Handlebars, helperReigerterQueue, pluginOptions)=>{
+
+  _import(Handlebars, pluginOptions);
+  _raw(Handlebars, pluginOptions);
+
   //加载扩张helper
   helperReigerterQueue = helperReigerterQueue || []
   helperReigerterQueue.forEach(function(element) {
-    element(Handlebars)
+    element(Handlebars, pluginOptions)
   });
 
 

@@ -8,5 +8,8 @@
     "handlebars": "^4.0.5",
     "lodash": "^4.16.4",
     "request": "^2.79.0"
+  },
+  "scripts": {
+    "prepublish": "npm shrinkwrap"
   }
 }
