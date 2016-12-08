@@ -34,8 +34,6 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.dataConfig = _dataConfig
   //挂载工作目录
   _DefaultSetting.cwd = cli.cwd;
-
-  console.log(_dataConfig)
   
   //加载handlebars  helper
   _helper(_handlebars, cli.ext['hbs'], _DefaultSetting);

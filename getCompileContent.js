@@ -42,7 +42,7 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
      })
   })
 
-  //是否需要读取文件内配置
+  //是否需要读取文件内配置数据地址
   queue.push((context, content, asyncNext)=>{
 
     if(context !== false){
@@ -50,14 +50,16 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
     }
     let reg = /\{\{\!\-\-\s*PAGE_DATA\s*[:]\s*(.+)\s*\-\-\}\}/g;
     let result = reg.exec(content)
-    let dataUrlInContent = ""
+    let dataUrlInContent = "";
+    //获取首个匹配项
     if(result && result[1]){
-      dataUrlInContent = result[1].replace(/ /g, "")
+      dataUrlInContent = result[1].replace(/\s/g, "")
     }
     //如果没有配置，则直接编译文件
     if(!dataUrlInContent){
       return asyncNext(null, {}, content)
     }
+
     _fetchData(cli, dataUrlInContent, dataConfig, (error, context)=>
       asyncNext(error, context, content)
     )

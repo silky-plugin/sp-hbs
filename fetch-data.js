@@ -27,7 +27,7 @@ const getDataFromUrl = (url, dataConfig, cb)=>{
       return cb(error)
     }
     if(response.statusCode != 200){
-      return cb(new Error(`错误，状态码${response.statusCode}`))
+      return cb(new Error(`错误，${options.url} 状态码${response.statusCode}`))
     }
     try{
       body = JSON.parse(body);
@@ -46,14 +46,20 @@ const isUrl = (url)=>{
 
 module.exports = (cli, dataUrl, dataConfig, cb)=>{
   let dataUrlTemplate = _handlebars.compile(dataUrl);
-  dataUrl = dataUrlTemplate(dataConfig.urlMap)
+  dataUrl = dataUrlTemplate(dataConfig.urlMap);
+
+  
   if(isUrl(dataUrl)){
-    return getDataFromUrl(dataUrl, dataConfig, cb)
+    return getDataFromUrl(dataUrl, dataConfig, (error, context)=>{
+      if(error){return cb(error)}
+      cb(null, dataConfig.formatPageData(dataUrl, context))
+    })
   }
+
   try{
     //作为文件内容读取json，而不直接Require，避免缓存问题
     let context = cli.runtime.getRuntimeEnvFile(dataUrl, true);
-    cb(null, JSON.parse(context))
+    cb(null, dataConfig.formatPageData(dataUrl, JSON.parse(context)))
   }catch(e){
     cb(e)
   }

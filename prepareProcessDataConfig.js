@@ -6,7 +6,8 @@ module.exports = (cli, setting)=>{
     urlMap: {},
     moduleMap: {},
     global: {},
-    globalRoot: "__global"
+    globalRoot: "__global",
+    formatPageData: (url, context)=>{return context}
   }
 
   if(!setting['data-config']){

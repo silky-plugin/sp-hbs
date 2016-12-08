@@ -29,7 +29,9 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
   })
 
   //如果不是
-  if(!_path.isAbsolute(moduleName)){
+  if(_path.isAbsolute(moduleName)){
+    moduleName = _path.join(pluginOptions.cwd, moduleName)
+  }else{
     moduleName = _path.join(pluginOptions.cwd, pluginOptions.root, moduleName)
   }
   return moduleName;
