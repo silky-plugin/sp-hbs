@@ -1,11 +1,16 @@
 'use strict';
-const _import = require('./helper/imports-helper')
-const _raw = require('./helper/raw')
+const _path = require('path')
+const _fs = require('fs')
 
 module.exports = (Handlebars, helperReigerterQueue, pluginOptions)=>{
-
-  _import(Handlebars, pluginOptions);
-  _raw(Handlebars, pluginOptions);
+  //动态加载helper
+  _fs.readdir(_path.join(__dirname, "helper"), (error, fileList)=>{
+    fileList.forEach((filename)=>{
+      let fn = require(_path.join(__dirname, "helper", filename))
+      fn(Handlebars, pluginOptions)
+    })
+  })
+  
 
   //加载扩张helper
   helperReigerterQueue = helperReigerterQueue || []

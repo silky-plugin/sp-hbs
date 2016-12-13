@@ -19,6 +19,10 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
     let value = _.extend({}, pageData)
     let xPathArr = xPath.split('.');
     for(let i = 0, length = xPathArr.length; i < length; i++){
+      //TODO _ 也是全局变量的意思 直接忽略 奇葩 
+      if(xPathArr[i] == '_'){
+        continue;
+      }
       if(!value[xPathArr[i]]){
         value = undefined;
         break
@@ -29,7 +33,7 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
   })
 
   //如果不是
-  if(_path.isAbsolute(moduleName)){
+  if(moduleName.indexOf('/') == 0){
     moduleName = _path.join(pluginOptions.cwd, moduleName)
   }else{
     moduleName = _path.join(pluginOptions.cwd, pluginOptions.root, moduleName)

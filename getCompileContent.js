@@ -74,10 +74,16 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
       if(context[dataConfig.globalRoot]){
         cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloabl-root 挂载点 一致， 全局配置将覆盖此字段！！！`)
       }
-      let gloablVar = {}
-      gloablVar[dataConfig.globalRoot] = dataConfig.global
+      let globalVar = {}
+      globalVar[dataConfig.globalRoot] = dataConfig.global;
+
+      // -----------  TODO 一下两行为了暂时兼容pub库。以后需要删除
+      globalVar['_'] = {};
+      globalVar['_'][dataConfig.globalRoot] = dataConfig.global;
+      // -----------  END
+      
       //继承全局变量
-      _.extend(context, gloablVar)
+      _.extend(context, globalVar)
       asyncNext(null, crossData, template(context))
     }catch(e){
       asyncNext(e)
