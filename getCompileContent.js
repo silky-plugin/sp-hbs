@@ -84,7 +84,8 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
       
       //继承全局变量
       _.extend(context, globalVar)
-      asyncNext(null, crossData, template(context))
+      let html = template(context);
+      asyncNext(null, crossData, html)
     }catch(e){
       asyncNext(e)
     }

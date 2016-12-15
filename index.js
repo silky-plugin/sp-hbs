@@ -42,7 +42,7 @@ exports.registerPlugin = function(cli, options){
     let pathname = data.realPath;
     //如果不需要编译
     if(!isNeedCompile(pathname)){
-      return cb(null, data, content)
+      return cb(null, content)
     } 
     
     let templateRoot =  _DefaultSetting.root || "";
@@ -55,23 +55,24 @@ exports.registerPlugin = function(cli, options){
     _getCompileContent(cli, data, realFilePath, relativeFilePath, _dataConfig, (error, data, content)=>{
       if(error){return cb(error)};
       //交给下一个处理器
-      cb(null, data, content)
+      cb(null, content)
     })
   },1)
 
 
-  cli.registerHook('build:doCompile', (data, content, cb)=>{
+  cli.registerHook('build:doCompile', (buildConfig, data, content, cb)=>{
     let inputFilePath = data.inputFilePath;
     if(!/(\.hbs)$/.test(inputFilePath)){
-      return cb(null, data, content)
+      return cb(null, content)
     }
-    _getCompileContent(cli, data, inputFilePath, data.inputFileRelativePath, _dataConfig, (error, data, content)=>{
+    _getCompileContent(cli, data, inputFilePath, data.inputFileRelativePath, _dataConfig, (error, resultData, content)=>{
       if(error){return  cb(error);}
+      data = resultData;
       if(data.status == 200){
         data.outputFilePath = data.outputFilePath.replace(/(\hbs)$/, "html")
+        data.outputFileRelativePath = data.outputFileRelativePath.replace(/(\hbs)$/, "html")
       }
-
-      cb(error, data, content);
+      cb(error, content);
     })
 
   }, 1)
