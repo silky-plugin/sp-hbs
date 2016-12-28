@@ -14,7 +14,7 @@ const getDataFromUrl = (url, dataConfig, cb)=>{
   let urlObj = _url.parse(url);
 
   queryParams = _.extend( _querystring.parse(urlObj.query), queryParams);
-  
+
   let options = {
     url: `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`,
     qs: queryParams,

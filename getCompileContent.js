@@ -76,16 +76,14 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
       }
       let globalVar = {}
       globalVar[dataConfig.globalRoot] = dataConfig.global;
-
       // -----------  TODO 一下两行为了暂时兼容pub库。以后需要删除
       globalVar['_'] = {};
       globalVar['_'][dataConfig.globalRoot] = dataConfig.global;
       // -----------  END
-      
       //继承全局变量
-      _.extend(context, globalVar)
+      _.extend(context, globalVar);
       let html = template(context);
-      asyncNext(null, crossData, html)
+      asyncNext(null, crossData, html);
     }catch(e){
       asyncNext(e)
     }

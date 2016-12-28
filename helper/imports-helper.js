@@ -19,7 +19,7 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
     let value = _.extend({}, pageData)
     let xPathArr = xPath.split('.');
     for(let i = 0, length = xPathArr.length; i < length; i++){
-      //TODO _ 也是全局变量的意思 直接忽略 奇葩 
+      //TODO _ 也是全局变量的意思 直接忽略 奇葩
       if(xPathArr[i] == '_'){
         continue;
       }
@@ -34,9 +34,9 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
 
   //如果不是
   if(moduleName.indexOf('/') == 0){
-    moduleName = _path.join(pluginOptions.cwd, moduleName)
+    moduleName = _path.join(pluginOptions.cwd(), moduleName)
   }else{
-    moduleName = _path.join(pluginOptions.cwd, pluginOptions.root, moduleName)
+    moduleName = _path.join(pluginOptions.cwd(), pluginOptions.root, moduleName)
   }
   return moduleName;
 };
@@ -44,7 +44,7 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
 module.exports = (Handlebars, pluginOptions)=>{
   Handlebars.registerHelper('import', function(moduleName, ...args){
     if(!moduleName){
-      throw new Error('引入不存在模块')
+      throw new Handlebars.Exception('引入不存在模块');
     }
 
     let handlebarOptions = args.pop();
@@ -67,8 +67,9 @@ module.exports = (Handlebars, pluginOptions)=>{
     }
     //如果html和hbs都不存在则返回 error到编译页面。
     if(!_fs.existsSync(hbsPath)){
-      console.warn(`引入模块不存在`.red)
-      return new Handlebars.SafeString(`<!-- Error: cannot find module ${moduleName} -->`)
+      throw new Handlebars.Exception(`引入不存在模块 ${hbsPath}`);
+      //console.warn(`引入模块不存在 ${hbsPath}`.red)
+      //return new Handlebars.SafeString(`<!-- Error: cannot find module ${moduleName} -->`)
     }
 
     //如果hbs存在
