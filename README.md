@@ -13,7 +13,7 @@
 ```
 
 读取`data-config`在运行时的配置数值`demo.js`，
-【例如：运行时环境为`production` 先读`production/demo.js`, 在看`normal/demo.js`, 然后 `normal`继承`production`】 
+【例如：运行时环境为`production` 先读`production/demo.js`, 在看`normal/demo.js`, 然后 `normal`继承`production`】
 如果没有指定该配置则默认数值为`{}`
 
 `demo.js`:
@@ -27,10 +27,10 @@ module.exports = {
     "/path/to/hbs or html": "xxx.json"
   },
   //可选配置 仅到存在dataMap时有用
-  "baseUrl":"xxxx" 
-  // ------- 
+  "baseUrl":"xxxx"
+  // -------
 
-  //用于替换 数据地址中的变量 。 比如  baseUrl + dataMap 中含有 {{xxx}} ， 
+  //用于替换 数据地址中的变量 。 比如  baseUrl + dataMap 中含有 {{xxx}} ，
   //或者页面数据配置中 {{!-- PAGE_DATA: {{xxx}}data.json--}} 含有 {{xxx}}, 那么将用  urlMap 里面的值替换 http
   //可选， Default: {}
   "urlMap":{
@@ -50,9 +50,9 @@ module.exports = {
   //----------------
 
 
-  //---------- 全局变量 
+  //---------- 全局变量
   /**
-  
+
   在页面中可以通过`__global.globalVar` 来使用全局变量,如：
   <p>{{__global.globalVar}}</p> 编译完成后: <p>this is global var.</p>
 
@@ -60,7 +60,7 @@ module.exports = {
   当然如果你觉得  `__global` 变量不好记，或者 觉得该变量名称可能会与页面配置的数据源 冲突，导致页面数据源被全局变量覆盖，那么可以通过 globalRoot来另外指定挂载点。
   如： globalRoot: '__root' 那么页面使用就是 `<p>{{__root.globalVar}}</p>`
   **/
-  
+
   //可选,默认 {}
   global: {
     globalVar: "this is global var."
@@ -109,7 +109,7 @@ module.exports = {
 ```hbs
 {{!-- PAGE_DATA: {{main}}hello --}}
 ```
- 
+
  这里的  `DATA-URL`则是  `PGAE_DATA:`后面的值 `hello` 或 `{{main}}hello`, 然后用 `urlMap`里面的变量 替换 `DATA-URL`. 得到`REAL-DATA-URL`
 
 
@@ -155,7 +155,7 @@ module.exports = {
 
 如果你在`silky`已有`help`基础上再次扩展自己的`helper` 请参考 [扩展文档](https://github.com/huyinghuan/slow-cli-2.0/blob/master/docs/dev-registerPluginExt.md)
 
-!!!Note!!!  
+!!!Note!!!
 
 1. 扩展的`node_modules` 名称必须符合规则: `sp-xxx-ext` 其中 `xxx` 自己定义
 
@@ -172,3 +172,10 @@ exports.registerPluginExt = function(cli, options){
   })
 }
 ```
+
+
+### HISTORY
+
+v1.0.3
+
+支持文件夹内hbs文件跳转

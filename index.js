@@ -11,7 +11,7 @@ const _prepareProcessDataConfig = require('./prepareProcessDataConfig');
 const _async = require('async')
 
 var _DefaultSetting = {
-  "root": ".",
+  "root": "/",
   "regexp": "(\.html)$",
   "data-config": false
 }
@@ -34,7 +34,6 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.dataConfig = _dataConfig
   //挂载工作目录
   _DefaultSetting.cwd = cli.cwd;
-  let __loadHelper = Date.now()
   //加载handlebars  helper
   _helper(_handlebars, cli.ext['hbs'], _DefaultSetting);
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{
@@ -78,6 +77,20 @@ exports.registerPlugin = function(cli, options){
       }
       cb(error, content);
     })
-
   }, 1)
+  //响应模版下的文件
+  cli.registerHook('route:dir', (path, data, next)=>{
+    let templateRoot =  _DefaultSetting.root || "/";
+    if(path.indexOf(templateRoot) != 0){
+      return next()
+    }
+    console.log(data.fileArray)
+    for(let i = 0, length = data.fileArray.length; i < length; i++){
+      let fileData = data.fileArray[i];
+      if(fileData.isDir){continue};
+      data.fileArray[i].href = fileData.href.substring(templateRoot.length).replace(/(\hbs)$/, "html")
+    }
+    next()
+  }, 50)
+
 }
