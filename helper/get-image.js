@@ -1,4 +1,4 @@
-module.exports = function(Handlebars){
+exports.helper = function(Handlebars){
   Handlebars.registerHelper('getImage', function(image, options) {
     var url, suffix, type, size;
     type = options.split('_')[0];
@@ -8,16 +8,16 @@ module.exports = function(Handlebars){
     } else {
         image = image || {};
         switch(type) {
-            case 'H': 
+            case 'H':
                 url = image.pcImgUrl || image.imgHUrl || image.squareImgUrl || image.imgHVUrl
                 break;
-            case 'V': 
+            case 'V':
                 url = image.pcImgUrl || image.imgHVUrl || image.squareImgUrl || image.imgHUrl
                 break;
-            case 'S': 
+            case 'S':
                 url = image.pcImgUrl || image.squareImgUrl || image.imgHUrl || image.imgHVUrl
                 break;
-            default: 
+            default:
                 url = image.pcImgUrl || image.imgHUrl || image.squareImgUrl || image.imgHVUrl
                 break;
         }

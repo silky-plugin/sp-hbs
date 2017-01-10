@@ -7,10 +7,10 @@ module.exports = (Handlebars, helperReigerterQueue, pluginOptions)=>{
   _fs.readdir(_path.join(__dirname, "helper"), (error, fileList)=>{
     fileList.forEach((filename)=>{
       let fn = require(_path.join(__dirname, "helper", filename))
-      fn(Handlebars, pluginOptions)
+      fn.helper(Handlebars, pluginOptions)
     })
   })
-  
+
 
   //加载扩张helper
   helperReigerterQueue = helperReigerterQueue || []

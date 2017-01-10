@@ -1,4 +1,4 @@
-module.exports = function(Handlebars){
+exports.helper = function(Handlebars){
   Handlebars.registerHelper('compare', function(left, symbol, right, options) {
     let result = (function(){
       switch (symbol) {

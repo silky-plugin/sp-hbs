@@ -1,6 +1,6 @@
  const _  = require('lodash')
 
-module.exports = function(Handlebars){
+exports.helper = function(Handlebars){
   Handlebars.registerHelper('slice',  (data, ...args)=>{
     if (!_.isArray(data)) {
         console.log('slice helper 参数必须存在且为数组');

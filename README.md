@@ -1,4 +1,69 @@
 ## HBS编译
+### 公共组件
+
+#### 配置
+```
+
+{
+  "sp-hbs":{
+    ...
+    "pub-modules": "node_modules" //可选 默认为node_modules
+  }
+}
+```
+
+### 公共组件规范（暂定）
+
+#### 文件结构
+
+```
+  module-name
+      |--------package.json  #必须，包含version， name，index【可有可无，默认为index.html】
+      |------- index.html or index.hbs or 其他【在index中定义】
+      |------- ....
+```
+
+#### 组件结构
+
+```
+按平时写html时写就好了。该引用就引用，建议全部 以 / 开始，表示组件根目录如：
+
+<link rel="stylesheet" href="/css/index.css" type="text/css">
+<script src="/js/module-A-component.js"></script>
+<script src="/js/module-A-1-component.js"></script>
+<div>
+  this  Pub A
+</div>
+
+```
+
+#### 如何开发一个公共组件
+
+先初始化一个silky项目，安装`sp-hbs`插件。配置好 `pub-modules` 指向开发组件的文件夹即可（只能为项目的根目录的相对路径，如  `pub-modules-dev`.
+  不允许绝对路径。 【linux，unix】可以 `/`开始，该`/`仅表示项目根目录。
+）
+
+新建 `package.json` 配置字段 `name`, `version` 即可。
+
+新建  `index.html` 。然后像开发普通的html开发即可。
+
+#### 如何发布
+
+```
+mgtv publish
+```
+
+#### 如果安装
+
+```
+silky install module-name 即可。
+```
+
+#### 使用
+
+见下文 `helper`部分
+
+
 
 ### 页面数据处理
 
@@ -7,7 +72,7 @@
 ```
 {
   "sp-hbs":{
-    data-config: "demo.js"
+    data-config: "demo.js"//可选
   }
 }
 ```
@@ -122,6 +187,18 @@ module.exports = {
 
 ### 已包含的 helper
 
+#### import
+
+引入模块
+{{import "Axx.hbs" data1, data2}}
+
+#### pub
+
+引入公共组件
+```
+{{pub "A" data1, data2}}
+```
+
 #### raw
 
 用于你不想通过`silky` 编译的页面内容。使用方法
@@ -175,6 +252,8 @@ exports.registerPluginExt = function(cli, options){
 
 
 ### HISTORY
+v1.0.4
+增加 `pub` 功能
 
 v1.0.3
 

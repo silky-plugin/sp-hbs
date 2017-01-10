@@ -41,7 +41,7 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
   return moduleName;
 };
 
-module.exports = (Handlebars, pluginOptions)=>{
+exports.helper = (Handlebars, pluginOptions)=>{
   Handlebars.registerHelper('import', function(moduleName, ...args){
     if(!moduleName){
       throw new Handlebars.Exception('引入不存在模块');

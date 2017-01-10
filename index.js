@@ -13,7 +13,8 @@ const _async = require('async')
 var _DefaultSetting = {
   "root": "/",
   "regexp": "(\.html)$",
-  "data-config": false
+  "data-config": false,
+  "pub-modules": "node_modules"
 }
 
 
@@ -26,6 +27,8 @@ const isNeedCompile = (pathname)=>{
 exports.registerPlugin = function(cli, options){
   //继承定义
   _.extend(_DefaultSetting, options);
+  //挂载组件目录
+  _DefaultSetting["pub-modules"] = _DefaultSetting["pub-modules"] || "node_modules"
 
   //预处理页面数据配置
   let _dataConfig = _prepareProcessDataConfig(cli, _DefaultSetting)
@@ -84,7 +87,6 @@ exports.registerPlugin = function(cli, options){
     if(path.indexOf(templateRoot) != 0){
       return next()
     }
-    console.log(data.fileArray)
     for(let i = 0, length = data.fileArray.length; i < length; i++){
       let fileData = data.fileArray[i];
       if(fileData.isDir){continue};
