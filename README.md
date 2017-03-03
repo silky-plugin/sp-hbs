@@ -199,6 +199,14 @@ module.exports = {
 {{pub "A" data1, data2}}
 ```
 
+#### publib
+
+用公共库(纯js或者纯css项目)
+
+```
+{{publib "jquery"}}
+```
+
 #### raw
 
 用于你不想通过`silky` 编译的页面内容。使用方法
