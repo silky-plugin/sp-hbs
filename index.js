@@ -13,8 +13,7 @@ const _async = require('async')
 var _DefaultSetting = {
   "root": "/",
   "regexp": "(\.html)$",
-  "data-config": false,
-  "pub-modules": "node_modules"
+  "data-config": false
 }
 
 
@@ -28,7 +27,7 @@ exports.registerPlugin = function(cli, options){
   //继承定义
   _.extend(_DefaultSetting, options);
   //挂载组件目录
-  _DefaultSetting["pub-modules"] = _DefaultSetting["pub-modules"] || "node_modules"
+  _DefaultSetting["pub-modules"] = cli.options.pubModulesDir
 
   //预处理页面数据配置
   let _dataConfig = _prepareProcessDataConfig(cli, _DefaultSetting)
@@ -37,6 +36,10 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.dataConfig = _dataConfig
   //挂载工作目录
   _DefaultSetting.cwd = cli.cwd;
+  //挂载工具函数
+  _DefaultSetting.getPublicLibIndex = cli.getPublicLibIndex
+  _DefaultSetting.getPublicLibDir = cli.getPublicLibDir
+
   //加载handlebars  helper
   _helper(_handlebars, cli.ext['hbs'], _DefaultSetting);
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{

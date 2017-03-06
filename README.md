@@ -260,6 +260,10 @@ exports.registerPluginExt = function(cli, options){
 
 
 ### HISTORY
+v1.0.6
+
+  1. 修复bug
+
 v1.0.4
 增加 `pub` 功能
 
