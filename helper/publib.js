@@ -17,11 +17,11 @@ const getLibFile = (pluginOptions, moduleName, mergetTo)=>{
   let jsArray = ["coffee", "js", "ts"]
 
   if ( _.indexOf(cssArray, suffix) != -1){
-    return `<link type="text/css" rel="stylesheet" href="${_path.join(moduleRootRelative, fileNameNoSuffix)}.css" component>`
+    return `<link type="text/css" rel="stylesheet" href="/${_path.join(moduleRootRelative, fileNameNoSuffix).replace(/(\\)+/g, "/")}.css" component>`
   }
 
   if ( _.indexOf(jsArray, suffix) != -1){
-    return `<script src="${_path.join(moduleRootRelative, fileNameNoSuffix)}.js" component></script>`
+    return `<script src="/${_path.join(moduleRootRelative, fileNameNoSuffix).replace(/(\\)+/g, "/")}.js" component></script>`
   }
 
   throw new Error("模块${moduleName}入口文件${index} 不支持 publib引用")
