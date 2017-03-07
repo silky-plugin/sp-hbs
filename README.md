@@ -260,6 +260,10 @@ exports.registerPluginExt = function(cli, options){
 
 
 ### HISTORY
+v1.0.7
+
+  1. 修改获取组件 index文件的方式
+
 v1.0.6
 
   1. 修复bug

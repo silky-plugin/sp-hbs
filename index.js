@@ -26,8 +26,6 @@ const isNeedCompile = (pathname)=>{
 exports.registerPlugin = function(cli, options){
   //继承定义
   _.extend(_DefaultSetting, options);
-  //挂载组件目录
-  _DefaultSetting["pub-modules"] = cli.options.pubModulesDir
 
   //预处理页面数据配置
   let _dataConfig = _prepareProcessDataConfig(cli, _DefaultSetting)

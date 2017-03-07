@@ -9,19 +9,20 @@ exports.helper = function(Handlebars, pluginOptions){
     }
 
     let handlebarOptions = args.pop();
-    let modulesRoot = _path.join(pluginOptions["pub-modules"], moduleName)
+    let modulesRoot = pluginOptions.getPublicLibDir(moduleName)
 
     let moduleRootDir = _path.join(pluginOptions.cwd(), modulesRoot);
 
     try{
       let packageJSON = require(_path.join(moduleRootDir, "package.json"));
-      let index = _path.join(moduleRootDir, "index.html")
-      if(packageJSON.index){
-        index = _path.join(moduleRootDir, packageJSON.index)
+      let index = pluginOptions.getPublicLibIndex(moduleName)
+      if(!index){
+        throw new Error(`找不到组件${moduleName}的入口文件`)
       }
+      index = _path.join(moduleRootDir, index)
       let htmlContent = _fs.readFileSync(index, 'utf8');
 
-      //-------- add  component to <script>
+      //-------- add  'component' attribute to <script>
       let scriptReg = /<script\b\s+[^>]*src\=['"]([^> '"]+)+['"][^>]*>([\s\S]*?)/gm
       htmlContent = htmlContent.replace(scriptReg, (line, match)=>{
         if(/^(http\:|https\:)?\/\//.test(match)){
@@ -32,7 +33,7 @@ exports.helper = function(Handlebars, pluginOptions){
           return  "<script" + m +  " component>"
         })
       })
-      //------- add component to <link>
+      //------- add 'component' attribute to <link>
       let styleReg = /<link\b\s+[^>]*href\=['"]([^> '"]+)+['"][^>]*>([\s\S]*?)/gm
       htmlContent = htmlContent.replace(styleReg, (line, match)=>{
         if(/^(http\:|https\:)?\/\//.test(match)){

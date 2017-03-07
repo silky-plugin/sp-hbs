@@ -1,6 +1,6 @@
 {
   "name": "sp-hbs",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "dependencies": {
     "align-text": {
       "version": "0.1.4",
