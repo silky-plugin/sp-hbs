@@ -7,7 +7,6 @@ exports.helper = function(Handlebars, pluginOptions){
     if(!moduleName){
       throw new Handlebars.Exception('引入不存在模块');
     }
-
     let handlebarOptions = args.pop();
     let modulesRoot = pluginOptions.getPublicLibDir(moduleName)
 
@@ -50,13 +49,26 @@ exports.helper = function(Handlebars, pluginOptions){
 
       let template = Handlebars.compile(htmlContent)
       //--------------START
-      //将import 进来的数据，扩展一个 $ + index 进行模块内数据引用的方式
-      let context = _.extend({},  handlebarOptions.data.root);
+     
+     
+      //-------支持公共组件图片路径
+      let context = {__pub: _path.join(pluginOptions.getPublicLibDir(moduleName), "images").replace(/\/\//g,"/")}  
+      _.extend(context,  handlebarOptions.data.root);
+      //环境pub定义
+      if(pluginOptions.dataConfig.getPubImageRoot){
+        context.__pub = pluginOptions.dataConfig.getPubImageRoot(moduleName)
+      }
+      //-----------
+
+
+       //将import 进来的数据，扩展一个 $ + index 进行模块内数据引用的方式
       for(let i = 0, length = args.length; i < length; i++){
         context[`$${i}`] = args[i]
       }
       context.$current = context.$0
       //---------------END
+
+
       return new Handlebars.SafeString(template(context))
     }catch(e){
       console.log(e)

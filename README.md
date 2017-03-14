@@ -39,9 +39,12 @@
 
 #### 如何开发一个公共组件
 
-先初始化一个silky项目，安装`sp-hbs`插件。配置好 `pub-modules` 指向开发组件的文件夹即可（只能为项目的根目录的相对路径，如  `pub-modules-dev`.
+先初始化一个silky项目，安装`sp-hbs`插件。配置好 `silky-pubPath` 指向开发组件的文件夹即可（只能为项目的根目录的相对路径，如  `pub-modules-dev`.
   不允许绝对路径。 【linux，unix】可以 `/`开始，该`/`仅表示项目根目录。
 ）
+
+在`pub-modules-dev`新建文件夹`pub-test-A`
+在`pub-test-A`目录下
 
 新建 `package.json` 配置字段 `name`, `version` 即可。
 
@@ -49,12 +52,14 @@
 
 #### 如何发布
 
+在`pub-test-A`目录下
+
 ```
 mgtv publish
 ```
 
 #### 如果安装
-
+在其他依赖该组件等工程下
 ```
 silky install module-name 即可。
 ```
@@ -138,7 +143,8 @@ module.exports = {
  // 页面数据格式化。 可选， 默认返回urlData
  //固定接收两个参数， url 页面数据地址， urlData 为根据页面数据地址获取到的数据
  formatPageData: (url, urlData)=>{return urlData}
-
+ //获取图片根目录【非开发（dev）环境可能需要配置】
+ getPubImageRoot:(moduleName)
 }
 ```
 
@@ -260,6 +266,9 @@ exports.registerPluginExt = function(cli, options){
 
 
 ### HISTORY
+v1.1.0
+  增加公共组件 图片处理方式
+
 v1.0.7
 
   1. 修改获取组件 index文件的方式

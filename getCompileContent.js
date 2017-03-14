@@ -72,7 +72,7 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
       crossData.status = 200;
       //挂载的全局变量是否和获取到页面数据全局变量有冲突。
       if(context[dataConfig.globalRoot]){
-        cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloabl-root 挂载点 一致， 全局配置将覆盖此字段！！！`)
+        cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloablRoot 挂载点 一致， 全局配置将覆盖此字段！！！`)
       }
       let globalVar = {}
       globalVar[dataConfig.globalRoot] = dataConfig.global;
