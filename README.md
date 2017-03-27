@@ -266,6 +266,21 @@ exports.registerPluginExt = function(cli, options){
 
 
 ### HISTORY
+v1.1.1
+  增加 为 pub 指令 添加统计代码功能
+
+  使用方式为 `data-config`指向的配置文件中，增加`statistics`字段：
+
+```
+{
+  statistics: "这是统计代码"
+  //或者
+   statistics: function(helperContent){
+     return helperContent+"这是统计代码"
+   }
+}
+```
+
 v1.1.0
   增加公共组件 图片处理方式
 

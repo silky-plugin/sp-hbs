@@ -68,8 +68,20 @@ exports.helper = function(Handlebars, pluginOptions){
       context.$current = context.$0
       //---------------END
 
+      //代码统计
+      let statistics = pluginOptions.dataConfig.statistics;
+      if(!statistics){
+        return new Handlebars.SafeString(template(context))
+      }
+      if(typeof statistics == "string"){
+        return new Handlebars.SafeString(template(context) + statistics)
+      }
+      if(typeof statistics == "function"){
+        return new Handlebars.SafeString(statistics(template(context)))
+      }
 
-      return new Handlebars.SafeString(template(context))
+      throw new Error("config statistics is unuseable.")
+      
     }catch(e){
       console.log(e)
       throw new Handlebars.Exception('引入不存在模块');
