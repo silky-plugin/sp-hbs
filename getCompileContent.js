@@ -1,9 +1,86 @@
 const _fs = require('fs')
 const _handlebars = require('handlebars');
 const _async = require('async');
-const _fetchData = require('./fetch-data');
 const _path = require('path');
 const _ = require('lodash');
+
+const _request = require('request');
+const _url = require('url');
+const _querystring = require('querystring');
+
+//获取页面对应的数据地址
+function getDataMap(inputFileRelativePathname, fileContent, dataConfig){
+  let dataMap = dataConfig['dataMap'];
+  inputFileRelativePathname = inputFileRelativePathname.replace(_path.extname(inputFileRelativePathname), "")
+  let dataUrl = dataMap[inputFileRelativePathname];
+  //--------------  看是否一一映射了数据地址
+  if(dataUrl){
+    return _path.join(dataConfig.baseUrl || "", dataUrl)
+  }
+  // ---- 看文件中是否存在地址映射
+  let reg = dataConfig.dataRegexp || /\{\{\!\-\-\s*PAGE_DATA\s*[:]\s*(.+)\s*\-\-\}\}/g;
+
+  if(_.isFunction(reg)){
+    return reg(fileContent)
+  }
+
+  let result = reg.exec(fileContent)
+  let dataUrlInContent = "";
+  //获取首个匹配项
+  if(result && result[1]){
+    return result[1].replace(/\s/g, "")
+  }
+  return false
+}
+
+//判断是否是url
+const isUrl = (url)=>{
+  return /^((http\:\/\/)|(htpps\:\/\/))/.test(url)
+}
+
+//从url获取数据
+const getDataFromUrl = (url, dataConfig, cb)=>{
+  let headers = dataConfig.headers || {};
+  let queryParams = dataConfig.queryParams || {};
+
+  let urlObj = _url.parse(url);
+
+  queryParams = _.extend( _querystring.parse(urlObj.query), queryParams);
+
+  let options = {
+    url: `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`,
+    qs: queryParams,
+    headers: headers,
+    timeout: 15000
+  };
+
+  _request(options, (error, response, body)=>{
+    if (error){
+      return cb(error)
+    }
+    if(response.statusCode != 200){
+      return cb(new Error(`错误，${options.url} 状态码${response.statusCode}`))
+    }
+    try{
+      body = JSON.parse(body);
+      cb(null, body)
+    }catch(e){
+      cb(new Error("Can not parse body"))
+    }
+  })
+}
+
+const doCompile = (crossData, fileContent, context, cb)=>{
+  try{
+    let template = _handlebars.compile(fileContent)
+    let html = template(context)
+    crossData.status = 200
+    cb(null, crossData, html)
+  }catch(e){
+    cb(e)
+  }
+}
+
 /**
  * Desc: 根据实际路径获取文件内容
  * params <cli>
@@ -16,78 +93,40 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
   if(!_fs.existsSync(inputFileRealPath)){
     return callback(null, crossData, "");
   }
+  
+  let fileContent = _fs.readFileSync(inputFileRealPath, "utf8")
+  //获取页面相关的数据地址
+  let dataURL = getDataMap(inputFileRelativePathname, fileContent, dataConfig)
 
-  let queue = [];
+  //获取全局变量
+  let globalVar = {}
+  globalVar[dataConfig.globalRoot] = dataConfig.global;
 
-  //是否在dataMap中配置了路径
-  queue.push((asyncNext)=>{
-    let dataMap = dataConfig['dataMap'];
-    inputFileRelativePathname = inputFileRelativePathname.replace(_path.extname(inputFileRelativePathname), "")
-    //数据路径映射
-    let dataUrl = dataMap[inputFileRelativePathname];
-    //如果没有数据路径映射 返回false
-    if(!dataUrl){
-      return asyncNext(null, false)
+  //不含数据地址
+  if(!dataURL){
+    doCompile(crossData, fileContent, globalVar, callback)
+    return
+  }
+  //编译数据地址
+  let dataUrlTemplate = _handlebars.compile(dataUrl);
+  //真实的数据地址
+  dataUrl = dataUrlTemplate(dataConfig.urlMap);
+
+  if(!isUrl(dataURL)){
+    //作为文件内容读取json，而不直接Require，避免缓存问题
+    let context = cli.runtime.getRuntimeEnvFile(dataUrl, true);
+    let contextData = dataConfig.formatPageData(dataUrl, JSON.parse(context))
+    doCompile(crossData, fileContent, _.extend(globalVar, contextData, callback))
+    return
+  }
+
+  getDataFromUrl(dataURL, dataConfig, (err, data)=>{
+    if(err){
+      return callback(err)
     }
-
-    let baseUrl = dataConfig.baseUrl || "";
-    dataUrl = _path.join(baseUrl, dataUrl)
-
-    _fetchData(cli, dataUrl, dataConfig, asyncNext)
+    if(context[dataConfig.globalRoot]){
+      cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloablRoot 挂载点 一致， 全局配置将覆盖此字段！！！`)
+    }
+    doCompile(crossData, fileContent, _.extend(context, globalVar), callback)
   })
-  //读取文件内容
-  queue.push((context, asyncNext)=>{
-     let fileContent = _fs.readFile(inputFileRealPath, {encoding: 'utf8'}, (error, content)=>{
-       asyncNext(error, context, content)
-     })
-  })
-
-  //是否需要读取文件内配置数据地址
-  queue.push((context, content, asyncNext)=>{
-
-    if(context !== false){
-      return asyncNext(null, context, content)
-    }
-    let reg = /\{\{\!\-\-\s*PAGE_DATA\s*[:]\s*(.+)\s*\-\-\}\}/g;
-    let result = reg.exec(content)
-    let dataUrlInContent = "";
-    //获取首个匹配项
-    if(result && result[1]){
-      dataUrlInContent = result[1].replace(/\s/g, "")
-    }
-    //如果没有配置，则直接编译文件
-    if(!dataUrlInContent){
-      return asyncNext(null, {}, content)
-    }
-
-    _fetchData(cli, dataUrlInContent, dataConfig, (error, context)=>
-      asyncNext(error, context, content)
-    )
-  })
-
-  queue.push((context, content, asyncNext)=>{
-    try{
-      let template = _handlebars.compile(content);
-      //编译成功，标记状态码
-      crossData.status = 200;
-      //挂载的全局变量是否和获取到页面数据全局变量有冲突。
-      if(context[dataConfig.globalRoot]){
-        cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloablRoot 挂载点 一致， 全局配置将覆盖此字段！！！`)
-      }
-      let globalVar = {}
-      globalVar[dataConfig.globalRoot] = dataConfig.global;
-      // -----------  TODO 一下两行为了暂时兼容pub库。以后需要删除
-      globalVar['_'] = {};
-      globalVar['_'][dataConfig.globalRoot] = dataConfig.global;
-      // -----------  END
-      //继承全局变量
-      _.extend(context, globalVar);
-      let html = template(context);
-      asyncNext(null, crossData, html);
-    }catch(e){
-      asyncNext(e)
-    }
-  })
-
-  _async.waterfall(queue, callback)
 }

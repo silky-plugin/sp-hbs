@@ -51,8 +51,8 @@ exports.helper = function(Handlebars, pluginOptions){
       //--------------START
      
      
-      //-------支持公共组件图片路径
-      let context = {__pub: _path.join(pluginOptions.getPublicLibDir(moduleName), "images").replace(/\/\//g,"/")}  
+      //-------支持公共组件图片路径, 和公共组件再引用[pub 中 import]
+      let context = {__pub: _path.join(pluginOptions.getPublicLibDir(moduleName), "images").replace(/\/\//g,"/"), __pubRoot:moduleRootDir}  
       _.extend(context,  handlebarOptions.data.root);
       //环境pub定义
       if(pluginOptions.dataConfig.getPubImageRoot){

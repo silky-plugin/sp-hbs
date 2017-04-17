@@ -48,10 +48,14 @@ exports.helper = (Handlebars, pluginOptions)=>{
     }
 
     let handlebarOptions = args.pop();
-
     //获取模块真实路径
-    moduleName = getModuleRealPathName(moduleName, pluginOptions, handlebarOptions.data.root)
-
+    //如果引用模块存在于公共组件中
+    if(handlebarOptions.data.root.__pubRoot){
+      moduleName = _path.join(handlebarOptions.data.root.__pubRoot,moduleName)
+    }else{
+      moduleName = getModuleRealPathName(moduleName, pluginOptions, handlebarOptions.data.root)
+    }
+    
     //是否存在html 存在html返回html， 存在hbs返回编译hbs
     let htmlPath,hbsPath;
     htmlPath = hbsPath = moduleName;
@@ -81,7 +85,9 @@ exports.helper = (Handlebars, pluginOptions)=>{
     for(let i = 0, length = args.length; i < length; i++){
       context[`$${i}`] = args[i]
     }
-    context.$current = context.$0
+    if(context.$0){
+      context.$current = context.$0
+    }
     //---------------END
     return new Handlebars.SafeString(template(context))
   })

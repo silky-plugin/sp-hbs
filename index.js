@@ -5,7 +5,6 @@ const _path = require('path');
 const _fs = require('fs');
 const _handlebars = require('handlebars');
 const _helper = require('./helper');
-const _fetchData = require('./fetch-data');
 const _getCompileContent = require('./getCompileContent');
 const _prepareProcessDataConfig = require('./prepareProcessDataConfig');
 const _async = require('async')

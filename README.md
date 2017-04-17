@@ -1,92 +1,101 @@
-## HBS编译
-### 公共组件
+# HBS编译
 
-#### 配置
-```
-
-{
-  "sp-hbs":{
-    ...
-    "pub-modules": "node_modules" //可选 默认为node_modules
-  }
-}
-```
-
-### 公共组件规范（暂定）
-
-#### 文件结构
-
-```
-  module-name
-      |--------package.json  #必须，包含version， name，index【可有可无，默认为index.html】
-      |------- index.html or index.hbs or 其他【在index中定义】
-      |------- ....
-```
-
-#### 组件结构
-
-```
-按平时写html时写就好了。该引用就引用，建议全部 以 / 开始，表示组件根目录如：
-
-<link rel="stylesheet" href="/css/index.css" type="text/css">
-<script src="/js/module-A-component.js"></script>
-<script src="/js/module-A-1-component.js"></script>
-<div>
-  this  Pub A
-</div>
-
-```
-
-#### 如何开发一个公共组件
-
-先初始化一个silky项目，安装`sp-hbs`插件。配置好 `silky-pubPath` 指向开发组件的文件夹即可（只能为项目的根目录的相对路径，如  `pub-modules-dev`.
-  不允许绝对路径。 【linux，unix】可以 `/`开始，该`/`仅表示项目根目录。
-）
-
-在`pub-modules-dev`新建文件夹`pub-test-A`
-在`pub-test-A`目录下
-
-新建 `package.json` 配置字段 `name`, `version` 即可。
-
-新建  `index.html` 。然后像开发普通的html开发即可。
-
-#### 如何发布
-
-在`pub-test-A`目录下
-
-```
-mgtv publish
-```
-
-#### 如果安装
-在其他依赖该组件等工程下
-```
-silky install module-name 即可。
-```
-
-#### 使用
-
-见下文 `helper`部分
-
-
-
-### 页面数据处理
-
-0. 查看插件配置
+## 基本使用
 
 ```
 {
   "sp-hbs":{
-    data-config: "demo.js"//可选
+    "root": "template" #可选。默认 "/" 配置hbs所在的目录， 在老版的silky中，hbs一般放在了template中，新版默认在根目录
+    "data-config": "hbs.config.js" #可选 指定一些hbs的参数，和编译
   }
 }
 ```
 
-读取`data-config`在运行时的配置数值`demo.js`，
-【例如：运行时环境为`production` 先读`production/demo.js`, 在看`normal/demo.js`, 然后 `normal`继承`production`】
-如果没有指定该配置则默认数值为`{}`
+## data-config 相关配置
 
-`demo.js`:
+### 配置文件读取顺序
+如上文配置`data-config:"hbs.config.js"` silky将去读取 `hbs.config.js`的内容作为hbs编译参数和相关配置数据
+不同环境下，读取的文件位置规定如下：
+【配置文件一般放在.silky文件夹。默认没有生成，需要新建。 .silky 目录下一般有三种目录（默认不存在，根据需要新建）： normal, production, develop】
+
+在 `sr start`命令下 读取的顺序是 `.silky/develop/hbs.config.js` -> `.silky/normal/hbs.config.js`
+在 `sr build`命令下 读取的顺序是 `.silky/production/hbs.config.js` -> `.silky/normal/hbs.config.js`
+
+如果第一个文件不存在则读取下一个文件， 如果 环境文件夹【把develop,production称为环境文件夹】和`normal`文件下都存在配置文件，那么 环境文件下的配置将会覆盖 `normal`文件夹
+下的配置。 一般是`normal`继承`develop或者production`,仅做一层继承
+
+### 配置文件的格式
+`hbs.config.js`:
+```
+module.exports = {
+  ...
+  ...
+}
+```
+
+### 配置文件 字段使用
+
+#### 全局变量 global
+
+`hbs.config.js`:
+```
+module.exports = {
+  global:{
+    "field": "this field value" 
+  }
+  globalVar: "__global" //可选，默认为 __global
+}
+```
+
+通过配置 `global`的值，可以通过`{{__global.field}}` 在hbs中使用该值。如：
+
+```
+module.exports = {
+  global:{
+    "imageRoot": "http://img.mgtv.com" 
+  }
+  globalVar: "__global"
+}
+```
+
+那么在 `xxx.hbs`中使用
+
+```
+<html>
+...
+<body>
+  <img src="{{__global.imageRoot}}/sr/a.png">
+</body>
+</html>
+```
+在`start`中，或者`build`中编译为
+```
+<html>
+...
+<body>
+  <img src="http://img.mgtv.com/sr/a.png">
+</body>
+</html>
+```
+
+通过修改 `globalVar`的值来修改全局变量的挂载点,如：`globalVar: "__root"`, 那么使用为:
+
+```
+<html>
+...
+<body>
+  <img src="{{__root.imageRoot}}/sr/a.png">
+</body>
+</html>
+```
+
+## 高级使用 【结合数据编译页面】
+
+数据获取。
+
+#### 方式一： 指定具体页面和相对应数据
+
+hbs.config.js 配置
 
 ```js
 
@@ -94,18 +103,18 @@ module.exports = {
   // -------- dataMap和baseUrl配合使用 组合为  baseUrl + dataMap[xxx] 然后用 urlMap 替换值
   //可选配置 default: {}
   "dataMap": {
-    "/path/to/hbs or html": "xxx.json"
+    "/path/to/a.hbs": ":{{port}}xxx.json"
   },
-  //可选配置 仅到存在dataMap时有用
-  "baseUrl":"xxxx"
+  //可选配置 仅到存在dataMap时有用, 这个配置可以省略。 比如上面的写成  "/path/to/a.hbs": "http://localhost:{{port}}xxx.json"
+  "baseUrl": "http://locahost"
   // -------
 
-  //用于替换 数据地址中的变量 。 比如  baseUrl + dataMap 中含有 {{xxx}} ，
-  //或者页面数据配置中 {{!-- PAGE_DATA: {{xxx}}data.json--}} 含有 {{xxx}}, 那么将用  urlMap 里面的值替换 http
   //可选， Default: {}
   "urlMap":{
-    xxx: "http://locahost:3000"
+    port: "3000"
+    server: "http://localhost"
   },
+  //上面三个参数组合的意思就是  hbs.compliewith("http://locahost"+ ":{{port}}/xxx.json",  {port: "3000"}) 得到了 http://localhost:3000/xxx.json
 
   //------- 共数据方式为 http模式使用
   //提供http head头，用于一些接口校验
@@ -118,87 +127,142 @@ module.exports = {
     xxxx:xxx
   }
   //----------------
+}
+
+```
+
+#### 方式二： 通过页面注释获取数据地址
+
+通过在hb始终配置
+```html
+{{!-- PAGE_DATA: {{server}}:{{port}}/a.json  --}}
+```
+那么通过上文`urlMap`的配置，得到的数据接口地址是：
+
+```
+http://localhost:3000/a.json 
+```
+
+那么将用`a.json`来编译这个页面
+
+      高级应用：通过配置 `dataRegexp` 可以正则自己的注释. dataRegexp可以是个正则表达式 也可以是个接收文件内容的函数，函数返回数据地址或者false
 
 
-  //---------- 全局变量
-  /**
+### 格式化页面数据
 
-  在页面中可以通过`__global.globalVar` 来使用全局变量,如：
-  <p>{{__global.globalVar}}</p> 编译完成后: <p>this is global var.</p>
-
-
-  当然如果你觉得  `__global` 变量不好记，或者 觉得该变量名称可能会与页面配置的数据源 冲突，导致页面数据源被全局变量覆盖，那么可以通过 globalRoot来另外指定挂载点。
-  如： globalRoot: '__root' 那么页面使用就是 `<p>{{__root.globalVar}}</p>`
-  **/
-
-  //可选,默认 {}
-  global: {
-    globalVar: "this is global var."
-  }
-  //全局变量挂载点
-  //可选， 默认 '__global'
-  globalRoot: "__global"
-  //--------
-
+从接口拿到到数据可能不符合页面要求，那么可以根据下面的配置选项，格式化拿到的数据
+```js
+module.exports = {
+  ...
  // 页面数据格式化。 可选， 默认返回urlData
  //固定接收两个参数， url 页面数据地址， urlData 为根据页面数据地址获取到的数据
  formatPageData: (url, urlData)=>{return urlData}
- //获取图片根目录【非开发（dev）环境可能需要配置】
- getPubImageRoot:(moduleName)
+ ...
+```
+
+
+## 公共组件开发规范
+
+### Silky配置
+
+#### 第一种配置
+可以在项目中边开发，边测试。通过配置 `silky-pubPath`指定开发中的组件文件夹
+
+package.json
+```
+
+{
+  "silky-pubPath":"pub-module"
+  "sp-hbs":{
+  }
 }
 ```
 
-具体逻辑是：
+#### 第二种 当成独立项目开发组件
 
-以页面请求为: `index.html` 为例
-
-1. 是否存在 `data-map`字段， 如果没有，则  `data-map`设置为 `{}`
+这个时候不需要进行任何配置，按平时开发一般html状态进行即可
 
 
-2. 读取 `dataMap` 里面的 `index`  该路径是否对应了 `数据地址`, 这里假如对应了 `dataA.json`,
+### 公共组件规范（暂定）
 
-那么查看是否配置了`baseUrl`,如果配置了，那么该数据路径将加上`baseUrl`.
+#### 文件结构
 
-所以，编译 index.html的数据源是:  `baseUrl` + `dataA.json`  =  `DATA-URL`。
-
-然后用 `urlMap` 里面的变量 替换 `DATA-URL`, 得到真正的数据地址 `REAL-DATA-URL`.
-
-(如果 `REAL-DATA-URL` 以`http://` 或者 `https://` 开始，那么去request url数据。
-如果不是，读取相应运行时环境下的`json`或`js`文件.  如果`http` `404`，或未找到对应的`js`或`json`,那么抛出 `Error`.）
-
-
-3. 如果第二步没有对应 `dataA.json` 数据选项，那么进入 `步骤4`
-
-4.  分析文件内容。 读取html或hbs文件里面的配置.
-
-```hbs
-{{!-- PAGE_DATA: hello --}}
+```
+  module-name
+      |--------package.json  #必须，包含version， name，index【可有可无，默认为index.html】
+      |------- index.html or index.hbs or 其他【在index中定义】
+      |------- images [图片必须放到images目录下]
+      |------- 其他
 ```
 
-或
+#### 组件结构
 
-```hbs
-{{!-- PAGE_DATA: {{main}}hello --}}
+```
+按平时写html时写就好了。该引用就引用，所有的css,js引用 全部 以 / 开始，表示组件根目录如：
+
+<link rel="stylesheet" href="/css/index.css" type="text/css">
+<script src="/js/module-A-component.js"></script>
+<script src="/js/module-A-1-component.js"></script>
+<div>
+  this  Pub A
+</div>
+
 ```
 
- 这里的  `DATA-URL`则是  `PGAE_DATA:`后面的值 `hello` 或 `{{main}}hello`, 然后用 `urlMap`里面的变量 替换 `DATA-URL`. 得到`REAL-DATA-URL`
+另外注意，所有出现在 less,css,html中的图片路径，必须以`__pub`代替`images`如：
+less:
+```
+ background-image: url("@{__pub}/a.jpg");
+```
+指定的代表的就是 `/images/a.jpg`
+
+html:
+
+```
+  <img src="{{__pub}}/b.png">
+```
+表示就是`/images/b.png`
+
+#### 如何开发一个公共组件
+
+进入工作目录
+
+```
+sr init -p pub-m
+sr install
+```
+即可，该命令会会初始化一个公共组件的demo，然后编辑修改 `silky-pubpath`配置对应的文件夹，开发自己的组件即可
 
 
- 然后用`REAL-DATA-URL`去获取页面数据。
+#### 如何发布
+
+在自己的公共组件目录下，记得 编辑 package.json的name,version字段，每次升级都需要升级version的版本号
+
+```
+mgtv publish
+```
+即可
+
+#### 如果安装
+在其他依赖该组件等工程下
+```
+silky install moduleName 即可。
+```
+
+#### 使用
+
+见下文 `helper`部分的`pub`和`publib`
 
 
-5. 若文中不含配置数据源，那么不使用数据编译。
+## 已包含的 helper
 
-
-
-### 已包含的 helper
-
-#### import
+### import
 
 引入模块
 {{import "Axx.hbs" data1, data2}}
+后面可以跟多个数据，用来编译`Axx.hbs`,在`Axx.hbs`里面，通过使用`$0`,`$1`来使用按顺序使用数据
 
-#### pub
+### pub
 
 引入公共组件
 ```
@@ -244,57 +308,5 @@ module.exports = {
 
 ### helper 扩展
 
-如果你在`silky`已有`help`基础上再次扩展自己的`helper` 请参考 [扩展文档](https://github.com/huyinghuan/slow-cli-2.0/blob/master/docs/dev-registerPluginExt.md)
+如果你在`silky`已有`help`基础上再次扩展自己的`helper` 请参考 示例：https://github.com/silky-plugin/sp-hbs-scan-ext
 
-!!!Note!!!
-
-1. 扩展的`node_modules` 名称必须符合规则: `sp-xxx-ext` 其中 `xxx` 自己定义
-
-2. 注册扩展时，本插件的扩展 注册名称必须为`hbs:xxx`  其中 `xxx` 自己定义
-
-这里展示一个demo：
-
-```
-exports.registerPluginExt = function(cli, options){
-  cli.registerExt('hbs:import', function(handlebars){
-    handlebars.registerHelper('import', (a, b)=>{
-      return a + b
-    })
-  })
-}
-```
-
-
-### HISTORY
-v1.1.1
-  增加 为 pub 指令 添加统计代码功能
-
-  使用方式为 `data-config`指向的配置文件中，增加`statistics`字段：
-
-```
-{
-  statistics: "这是统计代码"
-  //或者
-   statistics: function(helperContent){
-     return helperContent+"这是统计代码"
-   }
-}
-```
-
-v1.1.0
-  增加公共组件 图片处理方式
-
-v1.0.7
-
-  1. 修改获取组件 index文件的方式
-
-v1.0.6
-
-  1. 修复bug
-
-v1.0.4
-增加 `pub` 功能
-
-v1.0.3
-
-支持文件夹内hbs文件跳转
