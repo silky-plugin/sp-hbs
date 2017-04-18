@@ -72,8 +72,6 @@ exports.helper = (Handlebars, pluginOptions)=>{
     //如果html和hbs都不存在则返回 error到编译页面。
     if(!_fs.existsSync(hbsPath)){
       throw new Handlebars.Exception(`引入不存在模块 ${hbsPath}`);
-      //console.warn(`引入模块不存在 ${hbsPath}`.red)
-      //return new Handlebars.SafeString(`<!-- Error: cannot find module ${moduleName} -->`)
     }
 
     //如果hbs存在

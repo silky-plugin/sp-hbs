@@ -209,17 +209,17 @@ package.json
 
 ```
 
-另外注意，所有出现在 less,css,html中的图片路径，必须以`__pub`代替`images`如：
+另外注意，所有出现在 less, hbs中的图片路径，必须以`${moduleName}_img`代替`images`如：
 less:
 ```
- background-image: url("@{__pub}/a.jpg");
+ background-image: url("@{pubA_img}/a.jpg");
 ```
 指定的代表的就是 `/images/a.jpg`
 
-html:
+html:[在hbs中也可以使用__pub来代替]
 
 ```
-  <img src="{{__pub}}/b.png">
+  <img src="{{pubA_img}}/b.png">
 ```
 表示就是`/images/b.png`
 

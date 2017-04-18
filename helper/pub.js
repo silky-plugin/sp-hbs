@@ -58,8 +58,11 @@ exports.helper = function(Handlebars, pluginOptions){
     let template = Handlebars.compile(htmlContent)
     //--------------START
 
-    //-------支持公共组件图片路径, 和公共组件再引用[pub中import]
-    let context = {__pub: "/"+_path.join(modulesRoot, "images").replace(/\/\//g,"/").replace(/\\/g, "/"), __pubRoot:moduleRootDir}  
+    //-------支持公共组件图片路径, 和 __pubRoot 公共组件再引用[pub中import]
+    let imagesPath = "/"+_path.join(modulesRoot, "images").replace(/\/\//g,"/").replace(/\\/g, "/")
+    let context = {__pub: imagesPath, __pubRoot:moduleRootDir}
+    context[moduleName+"_img"] = imagesPath
+
     _.extend(context,  handlebarOptions.data.root);
     //环境pub定义
     if(pluginOptions.dataConfig.getPubImageRoot){
