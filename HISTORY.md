@@ -1,4 +1,7 @@
 ### HISTORY
+v1.3.0
+删除不必要的helper
+
 v1.2.1
 修复windows图片路径不正确问题
 

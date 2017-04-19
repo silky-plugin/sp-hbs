@@ -216,7 +216,7 @@ less:
 ```
 指定的代表的就是 `/images/a.jpg`
 
-html:[在hbs中也可以使用__pub来代替]
+html:
 
 ```
   <img src="{{pubA_img}}/b.png">
