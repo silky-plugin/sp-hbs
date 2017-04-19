@@ -2,6 +2,11 @@
 const _ = require('lodash')
 const _path = require('path')
 const _fs = require('fs')
+
+const pathToUrl = (pathname)=>{
+  return pathname.replace(/\/\//g,"/").replace(/(\\)+/g, "/")
+}
+
 exports.helper = function(Handlebars, pluginOptions){
   Handlebars.registerHelper('pub', function(moduleName, ...args) {
     if(!moduleName){
@@ -36,7 +41,7 @@ exports.helper = function(Handlebars, pluginOptions){
       if(/^(http\:|https\:)?\/\//.test(match)){
         return line
       }
-      line = line.replace(match, "/" + modulesRoot + "/" + match).replace(/\/\//g,"/")
+      line = pathToUrl(line.replace(match, "/" + modulesRoot + "/" + match))
       return line.replace(/<script\b([^>]+)>/, (href, m)=>{
         return  "<script" + m +  " component>"
       })
@@ -47,7 +52,7 @@ exports.helper = function(Handlebars, pluginOptions){
       if(/^(http\:|https\:)?\/\//.test(match)){
         return line
       }
-      line = line.replace(match, "/" + modulesRoot + "/" + match).replace(/\/\//g,"/")
+      line = pathToUrl(line.replace(match, "/" + modulesRoot + "/" + match))
       if(line.indexOf("text/css") == -1 && line.indexOf("stylesheet") == -1){
         return line
       }
@@ -59,7 +64,7 @@ exports.helper = function(Handlebars, pluginOptions){
     //--------------START
 
     //-------支持公共组件图片路径, 和 __pubRoot 公共组件再引用[pub中import]
-    let imagesPath = "/"+_path.join(modulesRoot, "images").replace(/\/\//g,"/").replace(/\\/g, "/")
+    let imagesPath = pathToUrl("/"+_path.join(modulesRoot, "images"))
     let context = {__pub: imagesPath, __pubRoot:moduleRootDir}
     context[moduleName+"_img"] = imagesPath
 
