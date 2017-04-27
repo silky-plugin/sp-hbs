@@ -1,4 +1,7 @@
 ### HISTORY
+v1.3.2
+  bug修复。 在build的时候，加载helper还没完成，build进程已开始，导致miss helper。
+
 v1.3.0
 删除不必要的helper
 
