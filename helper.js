@@ -6,7 +6,6 @@ module.exports = (Handlebars, helperReigerterQueue, pluginOptions)=>{
   //动态加载helper
   let fileList = _fs.readdirSync(_path.join(__dirname, "helper"))
   fileList.forEach((filename)=>{
-    console.log(filename)
     let fn = require(_path.join(__dirname, "helper", filename))
     fn.helper(Handlebars, pluginOptions)
   })

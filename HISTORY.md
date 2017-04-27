@@ -1,4 +1,6 @@
 ### HISTORY
+v1.3.3 
+  remove console.log
 v1.3.2
   bug修复。 在build的时候，加载helper还没完成，build进程已开始，导致miss helper。
 
