@@ -64,7 +64,7 @@ exports.helper = function(Handlebars, pluginOptions){
     //--------------START
 
     //-------支持公共组件图片路径, 和 __pubRoot 公共组件再引用[pub中import]
-    let imagesPath = pathToUrl("/"+_path.join(modulesRoot, "images"))
+    let imagesPath = pathToUrl("/"+_path.join(modulesRoot, "image"))
     let context = {__pub: imagesPath, __pubRoot:moduleRootDir}
     context[moduleName+"_img"] = imagesPath
 

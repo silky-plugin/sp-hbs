@@ -191,7 +191,7 @@ package.json
   module-name
       |--------package.json  #必须，包含version， name，index【可有可无，默认为index.html】
       |------- index.html or index.hbs or 其他【在index中定义】
-      |------- images [图片必须放到images目录下]
+      |------- image [图片必须放到image目录下]
       |------- 其他
 ```
 
@@ -209,19 +209,19 @@ package.json
 
 ```
 
-另外注意，所有出现在 less, hbs中的图片路径，必须以`${moduleName}_img`代替`images`如：
+另外注意，所有出现在 less, hbs中的图片路径，必须以`${moduleName}_img`代替`image`如：
 less:
 ```
  background-image: url("@{pubA_img}/a.jpg");
 ```
-指定的代表的就是 `/images/a.jpg`
+指定的代表的就是 `/image/a.jpg`
 
 html:
 
 ```
   <img src="{{pubA_img}}/b.png">
 ```
-表示就是`/images/b.png`
+表示就是`/image/b.png`
 
 #### 如何开发一个公共组件
 
