@@ -1,4 +1,7 @@
 ### HISTORY
+v1.3.5
+  修复data fetch bug
+
 v1.3.3 
   remove console.log
 v1.3.2

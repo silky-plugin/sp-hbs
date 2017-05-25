@@ -65,6 +65,7 @@ const getDataFromUrl = (url, dataConfig, cb)=>{
       body = JSON.parse(body);
       cb(null, body)
     }catch(e){
+      console.error(e)
       cb(new Error("Can not parse body"))
     }
   })
@@ -108,19 +109,20 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
     return
   }
   //编译数据地址
-  let dataUrlTemplate = _handlebars.compile(dataUrl);
+  let dataUrlTemplate = _handlebars.compile(dataURL);
   //真实的数据地址
-  dataUrl = dataUrlTemplate(dataConfig.urlMap);
+  dataURL = dataUrlTemplate(dataConfig.urlMap);
 
   if(!isUrl(dataURL)){
     //作为文件内容读取json，而不直接Require，避免缓存问题
-    let context = cli.runtime.getRuntimeEnvFile(dataUrl, true);
-    let contextData = dataConfig.formatPageData(dataUrl, JSON.parse(context))
+    let context = cli.runtime.getRuntimeEnvFile(dataURL, true);
+    let contextData = dataConfig.formatPageData(dataURL, JSON.parse(context))
     doCompile(crossData, fileContent, _.extend(globalVar, contextData, callback))
     return
   }
 
-  getDataFromUrl(dataURL, dataConfig, (err, data)=>{
+  getDataFromUrl(dataURL, dataConfig, (err, context)=>{
+    cli.log.info(`sp-hbs fetch data from: ${dataURL}`)
     if(err){
       return callback(err)
     }
