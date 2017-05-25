@@ -126,6 +126,7 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
     if(err){
       return callback(err)
     }
+    context = dataConfig.formatPageData(dataURL, context)
     if(context[dataConfig.globalRoot]){
       cli.log.warn(`！！！页面数据拥有字段${dataConfig.globalRoot}，它全局变量配置的 gloablRoot 挂载点 一致， 全局配置将覆盖此字段！！！`)
     }
