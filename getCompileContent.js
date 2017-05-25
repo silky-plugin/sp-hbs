@@ -102,7 +102,12 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
   //获取全局变量
   let globalVar = {}
   globalVar[dataConfig.globalRoot] = dataConfig.global;
-
+  if(dataConfig.globalRootMount){
+    let globalRootMount = [].concat(dataConfig.globalRootMount)
+    for(let i = 0, len = globalRootMount.length; i<len; i++){
+      globalVar[globalRootMount[i]] = globalVar
+    }
+  }
   //不含数据地址
   if(!dataURL){
     doCompile(crossData, fileContent, globalVar, callback)
