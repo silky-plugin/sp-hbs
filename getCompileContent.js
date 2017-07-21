@@ -91,11 +91,20 @@ const doCompile = (crossData, fileContent, context, cb)=>{
  * params <dataConfig> JSONObject
  */
 module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, callback)=>{
+
   if(!_fs.existsSync(inputFileRealPath)){
     return callback(null, crossData, "");
   }
-  
-  let fileContent = _fs.readFileSync(inputFileRealPath, "utf8")
+  _fs.readFile(inputFileRealPath, "utf8", (error, fileContent)=>{
+    if(error){
+      return callback(error, crossData, "")
+    }
+    compileContent(cli, fileContent, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, callback)
+  })
+
+}
+const compileContent = (cli, fileContent, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, callback)=>{
+
   //获取页面相关的数据地址
   let dataURL = getDataMap(inputFileRelativePathname, fileContent, dataConfig)
 

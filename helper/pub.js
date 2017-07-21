@@ -7,11 +7,25 @@ const pathToUrl = (pathname)=>{
   return pathname.replace(/\/\//g,"/").replace(/(\\)+/g, "/")
 }
 
+//获取映射关系
+function getPubModuleMap(moduleName, pluginOptions){
+  let dataConfig = pluginOptions.dataConfig || {};
+  if(!dataConfig){
+    return moduleName
+  }
+  if(!dataConfig.pubModuleMap){
+    return moduleName
+  }
+  return dataConfig.pubModuleMap[moduleName] || moduleName
+}
+
 exports.helper = function(Handlebars, pluginOptions){
   Handlebars.registerHelper('pub', function(moduleName, ...args) {
     if(!moduleName){
       throw new Handlebars.Exception('引入不存在模块');
     }
+    let originModuleName = moduleName;
+    moduleName = getPubModuleMap(moduleName, pluginOptions)
     let handlebarOptions = args.pop();
 
     let index = ""
@@ -75,13 +89,6 @@ exports.helper = function(Handlebars, pluginOptions){
     }
     //-----------
 
-    //是否不要代码统计
-    let needStatistics = true
-    if(args[args.length -1] == "__ns"){
-      needStatistics = false
-      //移除
-      args.pop()
-    }
 
     //将import 进来的数据，扩展一个 $ + index 进行模块内数据引用的方式
     for(let i = 0, length = args.length; i < length; i++){
@@ -91,18 +98,7 @@ exports.helper = function(Handlebars, pluginOptions){
       context.$current = context.$0
     }
     //---------------END
-    let html = template(context)
-    //代码统计
-    let statistics = pluginOptions.dataConfig.statistics;
-    if(!statistics || !needStatistics){
-      return new Handlebars.SafeString(html)
-    }
-    if(typeof statistics == "string"){
-      return new Handlebars.SafeString(html + statistics)
-    }
-    if(typeof statistics == "function"){
-      return new Handlebars.SafeString(statistics(html))
-    }
-    throw new Error("config statistics is unuseable.")
+    return new Handlebars.SafeString(template(context))
+
   });
 }
