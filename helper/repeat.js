@@ -11,4 +11,14 @@ exports.helper = function(Handlebars){
         }
         return html
     });
+    Handlebars.registerHelper('justloop',  (count, options)=>{
+        count = ~~count
+        let self = this
+        html = ''
+        for(let index = 0; index < count; index++){
+            self.$index = index
+            html += options.fn(self)
+        }
+        return html
+    });
 }

@@ -1,4 +1,8 @@
 ### HISTORY
+v1.4.1
+
+  增加 loop 和justloop两条指令
+
 v1.3.6
   修复data fetch bug
 

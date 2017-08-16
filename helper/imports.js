@@ -41,6 +41,36 @@ function getModuleRealPathName(moduleName, pluginOptions, pageData){
   return moduleName;
 };
 
+exports.getCompileHtml = function(moduleName, handlebarOptions){
+  //获取模块真实路径
+  //如果引用模块存在于公共组件中
+  if(handlebarOptions.data.root.__pubRoot){
+    moduleName = _path.join(handlebarOptions.data.root.__pubRoot,moduleName)
+  }else{
+    moduleName = getModuleRealPathName(moduleName, pluginOptions, handlebarOptions.data.root)
+  }
+  
+  //是否存在html 存在html返回html， 存在hbs返回编译hbs
+  let htmlPath,hbsPath;
+  htmlPath = hbsPath = moduleName;
+  //查看是否存在 ext， 添加后缀
+  if(!_path.extname(moduleName)){
+    htmlPath = `${moduleName}.html`;
+    hbsPath = `${moduleName}.hbs`;
+  }
+
+  //如果存在html直接 返回内容
+  if(_fs.existsSync(htmlPath) && /(\.html)$/.test(htmlPath)){
+    return new Handlebars.SafeString(_fs.readFileSync(htmlPath, 'utf8'))
+  }
+  //如果html和hbs都不存在则返回 error到编译页面。
+  if(!_fs.existsSync(hbsPath)){
+    throw new Handlebars.Exception(`引入不存在模块 ${hbsPath}`);
+  }
+  //如果hbs存在
+  return Handlebars.compile(_fs.readFileSync(hbsPath, 'utf8'))
+}
+
 exports.helper = (Handlebars, pluginOptions)=>{
   Handlebars.registerHelper('import', function(moduleName, ...args){
     if(!moduleName){
