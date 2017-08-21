@@ -1,4 +1,8 @@
 ### HISTORY
+v1.4.2
+
+  修复loop带来的bug
+
 v1.4.1
 
   增加 loop 和justloop两条指令
