@@ -80,8 +80,9 @@ exports.getCompileHtml = function(moduleName, pluginOptions, handlebarOptions){
 
 exports.helper = (Handlebars, pluginOptions)=>{
   Handlebars.registerHelper('import', function(moduleName, ...args){
+    let importModuleName = moduleName
     if(!moduleName){
-      throw new Handlebars.Exception('引入不存在模块');
+      throw new Handlebars.Exception('引入不存在模块,请检查页面数据');
     }
 
     let handlebarOptions = args.pop();

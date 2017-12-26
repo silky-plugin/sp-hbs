@@ -12,7 +12,12 @@ const _async = require('async')
 var _DefaultSetting = {
   "root": "/",
   "regexp": "(\.html)$",
-  "data-config": false
+  "data-config": false,
+  "publib-to-dir":[{
+    "path-match":"/js/publib/",
+    "module":[],
+    "dir":""
+  }]
 }
 
 
@@ -25,7 +30,7 @@ const isNeedCompile = (pathname)=>{
 exports.registerPlugin = function(cli, options){
   //继承定义
   _.extend(_DefaultSetting, options);
-
+  
   //预处理页面数据配置
   let _dataConfig = _prepareProcessDataConfig(cli, _DefaultSetting)
 
@@ -36,9 +41,16 @@ exports.registerPlugin = function(cli, options){
   //挂载工具函数
   _DefaultSetting.getPublicLibIndex = cli.getPublicLibIndex
   _DefaultSetting.getPublicLibDir = cli.getPublicLibDir
-
+  _DefaultSetting.enviroment = cli.options.enviroment
   //加载handlebars  helper
   _helper(_handlebars, cli.ext['hbs'], _DefaultSetting);
+
+
+  cli.registerHook('route:didRequest', (req, data, content, cb)=>{
+    let pathname = data.realPath;
+    if(path.indexOf("/publib/"))
+  })
+
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{
     let pathname = data.realPath;
     //如果不需要编译
@@ -75,8 +87,8 @@ exports.registerPlugin = function(cli, options){
       }
       _.extend(data, resultData);
       if(data.status == 200){
-        data.outputFilePath = data.outputFilePath.replace(/(\hbs)$/, "html")
-        data.outputFileRelativePath = data.outputFileRelativePath.replace(/(\hbs)$/, "html")
+        data.outputFilePath = data.outputFilePath.replace(/(hbs)$/, "html")
+        data.outputFileRelativePath = data.outputFileRelativePath.replace(/(hbs)$/, "html")
       }
       cb(error, content);
     })
@@ -90,7 +102,7 @@ exports.registerPlugin = function(cli, options){
     for(let i = 0, length = data.fileArray.length; i < length; i++){
       let fileData = data.fileArray[i];
       if(fileData.isDir){continue};
-      data.fileArray[i].href = fileData.href.substring(templateRoot.length).replace(/(\hbs)$/, "html")
+      data.fileArray[i].href = fileData.href.substring(templateRoot.length).replace(/(hbs)$/, "html")
     }
     next()
   }, 50)

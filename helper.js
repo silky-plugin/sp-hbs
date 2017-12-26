@@ -16,6 +16,4 @@ module.exports = (Handlebars, helperReigerterQueue, pluginOptions)=>{
   helperReigerterQueue.forEach(function(element) {
     element(Handlebars, pluginOptions)
   });
-
-
 }

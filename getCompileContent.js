@@ -51,7 +51,7 @@ const getDataFromUrl = (url, dataConfig, cb)=>{
     url: `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`,
     qs: queryParams,
     headers: headers,
-    timeout: 15000
+    timeout: 5000
   };
 
   _request(options, (error, response, body)=>{
