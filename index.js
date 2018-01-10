@@ -1,6 +1,7 @@
 'use strict';
 const _ = require('lodash');
 const _url = require('url');
+const _querystring = require("querystring")
 const _path = require('path');
 const _fs = require('fs-extra');
 const _handlebars = require('handlebars');
@@ -12,12 +13,6 @@ const _async = require('async')
 var _DefaultSetting = {
   "root": "/",
   "regexp": "(\.html)$",
-  "data-config": false,
-  "publib-to-dir":[{
-    "path-match":"/js/publib/",
-    "module":[],
-    "dir":""
-  }]
 }
 
 
@@ -44,28 +39,25 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.enviroment = cli.options.enviroment
   //加载handlebars  helper
   _helper(_handlebars, cli.ext['hbs'], _DefaultSetting);
-
-
-  cli.registerHook('route:didRequest', (req, data, content, cb)=>{
-    let pathname = data.realPath;
-    if(path.indexOf("/publib/"))
-  })
-
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{
     let pathname = data.realPath;
     //如果不需要编译
     if(!isNeedCompile(pathname)){
       return cb(null, content)
     }
-
     let templateRoot =  _DefaultSetting.root || "";
     let fakeFilePath = _path.join(cli.cwd(), templateRoot, pathname);
 
     let relativeFilePath = _path.join(templateRoot, pathname);
+    //处理查询参数
+    let originDataConfig = Object.assign({}, _dataConfig)
 
+    if(originDataConfig.urlMap){
+      originDataConfig.urlMap.queryParams = _.extend({}, originDataConfig.urlMap.queryParams, req.query)
+    }
     //替换路径为hbs
     let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
-    _getCompileContent(cli, data, realFilePath, relativeFilePath, _dataConfig, (error, data, content)=>{
+    _getCompileContent(cli, data, realFilePath, relativeFilePath, originDataConfig, (error, data, content)=>{
       if(error){
         cli.log.error(`出错文件: ${realFilePath}`)
         return cb(error)
