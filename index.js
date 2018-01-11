@@ -66,8 +66,6 @@ exports.registerPlugin = function(cli, options){
       cb(null, content)
     })
   },1)
-
-
   cli.registerHook('build:doCompile', (buildConfig, data, content, cb)=>{
     let inputFilePath = data.inputFilePath;
     if(!/(\.hbs)$/.test(inputFilePath)){
