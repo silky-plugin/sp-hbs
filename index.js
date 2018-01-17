@@ -7,6 +7,7 @@ const _fs = require('fs-extra');
 const _handlebars = require('handlebars');
 const _helper = require('./helper');
 const _getCompileContent = require('./getCompileContent');
+const _getPreviewContent = require('./getPreviewContent')
 const _prepareProcessDataConfig = require('./prepareProcessDataConfig');
 const _async = require('async')
 
@@ -37,8 +38,15 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.getPublicLibIndex = cli.getPublicLibIndex
   _DefaultSetting.getPublicLibDir = cli.getPublicLibDir
   _DefaultSetting.enviroment = cli.options.enviroment
-  //加载handlebars  helper
-  _helper(_handlebars, cli.ext['hbs'], _DefaultSetting);
+
+  //加载不同多helper
+  if(_.indexOf(process.argv, "start") != -1 || _.indexOf(process.argv, "build") != -1){
+    //加载handlebars  helper
+    _helper.normal(_handlebars, cli.ext['hbs'], _DefaultSetting);
+  } else if (_.indexOf(process.argv, "preview")!=-1){
+    _helper.preview(_handlebars, _DefaultSetting)
+  }
+  
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{
     let pathname = data.realPath;
     //如果不需要编译
@@ -66,6 +74,34 @@ exports.registerPlugin = function(cli, options){
       cb(null, content)
     })
   },1)
+  cli.registerHook('preview:compile', (req, data, content, cb)=>{
+    let pathname = data.realPath;
+    //如果不需要编译
+    if(!isNeedCompile(pathname)){
+      return cb(null, content)
+    }
+    let templateRoot =  _DefaultSetting.root || "";
+    let fakeFilePath = _path.join(cli.cwd(), templateRoot, pathname);
+
+    let relativeFilePath = _path.join(templateRoot, pathname);
+    //处理查询参数
+    let originDataConfig = Object.assign({}, _dataConfig)
+
+    if(originDataConfig.urlMap){
+      originDataConfig.urlMap.queryParams = _.extend({}, originDataConfig.urlMap.queryParams, req.query)
+    }
+    //替换路径为hbs
+    let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
+    _getPreviewContent(cli, data, realFilePath, relativeFilePath, originDataConfig, (error, data, content)=>{
+      if(error){
+        cli.log.error(`出错文件: ${realFilePath}`)
+        return cb(error)
+      };
+      //交给下一个处理器
+      cb(null, content)
+    })
+
+  })
   cli.registerHook('build:doCompile', (buildConfig, data, content, cb)=>{
     let inputFilePath = data.inputFilePath;
     if(!/(\.hbs)$/.test(inputFilePath)){
@@ -84,7 +120,7 @@ exports.registerPlugin = function(cli, options){
     })
   }, 1)
   //响应模版下的文件
-  cli.registerHook('route:dir', (path, data, next)=>{
+  cli.registerHook(['route:dir', 'preview:dir'], (path, data, next)=>{
     let templateRoot =  _DefaultSetting.root || "/";
     if(path.indexOf(templateRoot) != 0){
       return next()
@@ -96,7 +132,6 @@ exports.registerPlugin = function(cli, options){
     }
     next()
   }, 50)
-
   cli.registerHook('build:end', (buildConfig, cb)=>{
     for(let key in cli.options.pluginsConfig){
       if(key.indexOf('sp') == 0){

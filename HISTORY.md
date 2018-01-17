@@ -1,4 +1,7 @@
 ### HISTORY
+v1.4.6
+  支持`sr preview`
+
 v1.4.5
   修复一个本地json数据bug
 v1.4.2
