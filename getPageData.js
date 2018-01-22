@@ -68,6 +68,17 @@ const getDataFromUrl = (url, dataConfig, cb)=>{
   })
 }
 
+function compileURL(dataURL, data){
+  return dataURL.replace(/\{\{([^\}\}]*)\}\}/g, (line, match)=>{
+    let z = match.split(".")
+    let url = data
+    z.forEach(element => {
+      url = url[element]
+    });
+    return url
+  })
+}
+
 module.exports =  function(cli, fileContent, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, cb){
   //获取全局变量
   let globalVar = {}
@@ -84,11 +95,8 @@ module.exports =  function(cli, fileContent, crossData, inputFileRealPath, input
    if(!dataURL){
     return cb(null, globalVar)
   }
-  //编译数据地址
-  let dataUrlTemplate = _handlebars.create().compile(dataURL);
-  //真实的数据地址
-  dataURL = dataUrlTemplate(dataConfig.urlMap);
-
+  //编译数据地址 真实的数据地址
+  dataURL = compileURL(dataURL, dataConfig.urlMap)
   if(!isUrl(dataURL)){
     //作为文件内容读取json，而不直接Require，避免缓存问题
     let context = cli.runtime.getRuntimeEnvFile(dataURL, true);

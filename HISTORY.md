@@ -1,4 +1,8 @@
 ### HISTORY
+v1.4.7
+增加 stringify helper
+修复 页面配置数据url 结合 变量编译错误bug
+
 v1.4.6
   支持`sr preview`
 
