@@ -39,12 +39,12 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.getPublicLibDir = cli.getPublicLibDir
   _DefaultSetting.enviroment = cli.options.enviroment
 
-  //加载不同多helper
-  if(_.indexOf(process.argv, "start") != -1 || _.indexOf(process.argv, "build") != -1){
+  //加载不同helper
+  if (_.indexOf(process.argv, "preview")!=-1){
+    _helper.preview(_handlebars, _DefaultSetting)
+  }else{
     //加载handlebars  helper
     _helper.normal(_handlebars, cli.ext['hbs'], _DefaultSetting);
-  } else if (_.indexOf(process.argv, "preview")!=-1){
-    _helper.preview(_handlebars, _DefaultSetting)
   }
   
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{

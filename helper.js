@@ -6,6 +6,7 @@ const _loopHelp = require('./helper/loop')
 const _rawHelp = require('./helper/raw')
 const _repeatHelp = require('./helper/repeat')
 const _sliceHelp = require('./helper/slice')
+const _stringify = require('./helper/stringify')
 const _scanExtHelp = require('./preview-helper/scan-ext')
 const _pubHelp = require("./preview-helper/pub")
 const _publibHelp = require('./preview-helper/publib')
@@ -32,4 +33,5 @@ exports.preview = (Handlebars, pluginOptions)=>{
   _repeatHelp.helper(Handlebars, pluginOptions)
   _sliceHelp.helper(Handlebars, pluginOptions)
   _scanExtHelp.helper(Handlebars)
+  _stringify.helper(Handlebars)
 }

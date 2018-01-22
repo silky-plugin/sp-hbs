@@ -1,4 +1,11 @@
 ### HISTORY
+v1.4.8
+修复sr https 启动没有加载helper的bug
+
+v1.4.7
+增加 stringify helper
+修复 页面配置数据url 结合 变量编译错误bug
+
 v1.4.6
   支持`sr preview`
 
