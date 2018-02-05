@@ -1,4 +1,7 @@
 ### HISTORY
+v1.4.9-beta
+增加编译页面数据获取途径
+
 v1.4.8
 修复sr https 启动没有加载helper的bug
 
