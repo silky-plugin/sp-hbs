@@ -21,7 +21,8 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
     }
     if(crossData.pageData){
       let template = _handlebars.compile(fileContent)
-      let html = template(crossData.pageData)
+      
+      let html = template(dataConfig.formatPageData(crossData.realPath, crossData.pageData))
       crossData.status = 200
       callback(null, crossData, html)
       return
