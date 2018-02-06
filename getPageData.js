@@ -89,6 +89,9 @@ module.exports =  function(cli, fileContent, crossData, inputFileRealPath, input
       globalVar[globalRootMount[i]] = globalVar
     }
   }
+  if(crossData.pageData){
+    return cb(null, _.extend(globalVar, dataConfig.formatPageData(inputFileRealPath, crossData.pageData)))
+  }
   //获取页面相关的数据地址
   let dataURL = getDataMap(inputFileRelativePathname, fileContent, dataConfig)
    //不含数据地址

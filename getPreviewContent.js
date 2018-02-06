@@ -19,14 +19,6 @@ module.exports = (cli, crossData, inputFileRealPath, inputFileRelativePathname, 
     if(error){
       return callback(error, crossData, "")
     }
-    if(crossData.pageData){
-      let template = _handlebars.compile(fileContent)
-      
-      let html = template(dataConfig.formatPageData(crossData.realPath, crossData.pageData))
-      crossData.status = 200
-      callback(null, crossData, html)
-      return
-    }
     _getPageData(cli, fileContent, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, (err, pageData)=>{
       if(err){
         return callback(err)
