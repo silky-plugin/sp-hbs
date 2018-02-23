@@ -40,7 +40,7 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.enviroment = cli.options.enviroment
 
   //加载不同helper
-  if (_.indexOf(process.argv, "preview")!=-1){
+  if (_.indexOf(_DefaultSetting.enviroment, "preview")!=-1 || cli.options.runType == "processAsPreview"){
     _helper.preview(_handlebars, _DefaultSetting)
   }else{
     //加载handlebars  helper
