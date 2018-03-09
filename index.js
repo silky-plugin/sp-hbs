@@ -38,15 +38,22 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.getPublicLibIndex = cli.getPublicLibIndex
   _DefaultSetting.getPublicLibDir = cli.getPublicLibDir
   _DefaultSetting.enviroment = cli.options.enviroment
-
+  let _precompile = null
   //加载不同helper
   if (cli.options.runType =="preview"){
     _helper.preview(_handlebars, _DefaultSetting)
+  }else if(cli.options.runType =="precompile"){
+    _precompile = require('./precompile/index')
   }else{
     //加载handlebars  helper
     _helper.normal(_handlebars, cli.ext['hbs'], _DefaultSetting);
   }
   
+  cli.registerHook('precompile:include', (buildConfig, content, cb)=>{
+   // cb(null, `hbs precompile:${fileItem.fileName}`)
+    _precompile(content, _DefaultSetting, cb)
+  })
+
   cli.registerHook('route:didRequest', (req, data, content, cb)=>{
     let pathname = data.realPath;
     //如果不需要编译
