@@ -2,6 +2,7 @@ const _helper = require('./helper');
 const _ = require('lodash');
 const _getCompileContent = require('./getCompileContent');
 const _fs = require('fs-extra');
+const _path = require('path')
 const _handlebars = require('handlebars');
 module.exports = (cli, _DefaultSetting)=>{
   //加载handlebars  helper
