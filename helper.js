@@ -25,7 +25,6 @@ exports.normal = (Handlebars, helperReigerterQueue, pluginOptions)=>{
 }
 
 exports.preview = (Handlebars, pluginOptions)=>{
-  _importsHelp.helper(Handlebars, pluginOptions)
   _loopHelp.helper(Handlebars, pluginOptions)
   _rawHelp.helper(Handlebars, pluginOptions)
   _repeatHelp.helper(Handlebars, pluginOptions)

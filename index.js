@@ -1,26 +1,10 @@
 'use strict';
 const _ = require('lodash');
-const _url = require('url');
-const _querystring = require("querystring")
-const _path = require('path');
-const _fs = require('fs-extra');
-const _handlebars = require('handlebars');
-const _helper = require('./helper');
-const _getCompileContent = require('./getCompileContent');
-const _getPreviewContent = require('./getPreviewContent')
 const _prepareProcessDataConfig = require('./prepareProcessDataConfig');
-const _async = require('async')
 
 var _DefaultSetting = {
   "root": "/",
   "regexp": "(\.html)$",
-}
-
-
-//判断该文件是否需要处理
-const isNeedCompile = (pathname)=>{
-  let reg = new RegExp(_DefaultSetting.regexp)
-  return reg.test(pathname.toLowerCase())
 }
 
 exports.registerPlugin = function(cli, options){
@@ -38,119 +22,27 @@ exports.registerPlugin = function(cli, options){
   _DefaultSetting.getPublicLibIndex = cli.getPublicLibIndex
   _DefaultSetting.getPublicLibDir = cli.getPublicLibDir
   _DefaultSetting.enviroment = cli.options.enviroment
-  let _precompile = null
   //加载不同helper
-  if (cli.options.runType =="preview"){
-    _helper.preview(_handlebars, _DefaultSetting)
-  }else if(cli.options.runType =="precompile"){
-    _precompile = require('./precompile/index')
-  }else{
-    //加载handlebars  helper
-    _helper.normal(_handlebars, cli.ext['hbs'], _DefaultSetting);
+  //TODO
+  //检查 插件版本对silky的要求避免安装错误
+  switch(cli.options.runType){
+    case "precompile":
+      let prebuildHook = require('./hook-prebuild')
+      prebuildHook(cli, _DefaultSetting)
+      break
+    case "preview":
+      let previewHook = require('./hook-preview')
+      previewHook(cli, _DefaultSetting)
+      break
+    case "dev":
+      let devHook = require('./hook-dev')
+      devHook(cli, _DefaultSetting)
+      break
+    case "build":
+      let buildHook = require('./hook-build')
+      buildHook(cli, _DefaultSetting)
+      break
+    default:
+      console.log("不可识别运行类别")
   }
-  
-  cli.registerHook('precompile:include', (buildConfig, content, cb)=>{
-   // cb(null, `hbs precompile:${fileItem.fileName}`)
-    _precompile(content, _DefaultSetting, cb)
-  })
-
-  cli.registerHook('route:didRequest', (req, data, content, cb)=>{
-    let pathname = data.realPath;
-    //如果不需要编译
-    if(!isNeedCompile(pathname)){
-      return cb(null, content)
-    }
-    let templateRoot =  _DefaultSetting.root || "";
-    let fakeFilePath = _path.join(cli.cwd(), templateRoot, pathname);
-
-    let relativeFilePath = _path.join(templateRoot, pathname);
-    //处理查询参数
-    let originDataConfig = Object.assign({}, _dataConfig)
-
-    if(originDataConfig.urlMap){
-      originDataConfig.urlMap.queryParams = _.extend({}, originDataConfig.urlMap.queryParams, req.query)
-    }
-    //替换路径为hbs
-    let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
-    _getCompileContent(cli, data, realFilePath, relativeFilePath, originDataConfig, (error, data, content)=>{
-      if(error){
-        cli.log.error(`出错文件: ${realFilePath}`)
-        return cb(error)
-      };
-      //交给下一个处理器
-      cb(null, content)
-    })
-  },1)
-  cli.registerHook('preview:compile', (req, data, content, cb)=>{
-    let pathname = data.realPath;
-    //如果不需要编译
-    if(!isNeedCompile(pathname)){
-      return cb(null, content)
-    }
-    let templateRoot =  _DefaultSetting.root || "";
-    let fakeFilePath = _path.join(cli.cwd(), templateRoot, pathname);
-
-    let relativeFilePath = _path.join(templateRoot, pathname);
-    //处理查询参数
-    let originDataConfig = Object.assign({}, _dataConfig)
-
-    if(originDataConfig.urlMap){
-      originDataConfig.urlMap.queryParams = _.extend({}, originDataConfig.urlMap.queryParams, req.query)
-    }
-    //替换路径为hbs
-    let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
-    _getPreviewContent(cli, data, realFilePath, relativeFilePath, originDataConfig, (error, data, content)=>{
-      if(error){
-        cli.log.error(`出错文件: ${realFilePath}`)
-        return cb(error)
-      };
-      //交给下一个处理器
-      cb(null, content)
-    })
-
-  })
-  cli.registerHook('build:doCompile', (buildConfig, data, content, cb)=>{
-    let inputFilePath = data.inputFilePath;
-    if(!/(\.hbs)$/.test(inputFilePath)){
-      return cb(null, content)
-    }
-    _getCompileContent(cli, data, inputFilePath, data.inputFileRelativePath, _dataConfig, (error, resultData, content)=>{
-      if(error){
-        return  cb(error);
-      }
-      _.extend(data, resultData);
-      if(data.status == 200){
-        data.outputFilePath = data.outputFilePath.replace(/(hbs)$/, "html")
-        data.outputFileRelativePath = data.outputFileRelativePath.replace(/(hbs)$/, "html")
-      }
-      cb(error, content);
-    })
-  }, 1)
-  //响应模版下的文件
-  cli.registerHook(['route:dir', 'preview:dir'], (path, data, next)=>{
-    let templateRoot =  _DefaultSetting.root || "/";
-    if(path.indexOf(templateRoot) != 0){
-      return next()
-    }
-    for(let i = 0, length = data.fileArray.length; i < length; i++){
-      let fileData = data.fileArray[i];
-      if(fileData.isDir){continue};
-      data.fileArray[i].href = fileData.href.substring(templateRoot.length).replace(/(hbs)$/, "html")
-    }
-    next()
-  }, 50)
-  cli.registerHook('build:end', (buildConfig, cb)=>{
-    for(let key in cli.options.pluginsConfig){
-      if(key.indexOf('sp') == 0){
-        continue
-      }
-      let moduleImagesDir = _path.join(cli.cwd(), cli.options.pubModulesDir, key, "image")
-      let outputImageDir =  _path.join(cli.options.buildConfig.outdir, "image", key)
-      if(_fs.existsSync(moduleImagesDir)){
-        _fs.copySync(moduleImagesDir, outputImageDir)
-        cli.log.info(`pub modules copy dir '${key}/image' to '/image/${key}'`)
-      } 
-    }
-    cb(null)
-  }, 1)
 }
