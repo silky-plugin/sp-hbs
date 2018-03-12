@@ -16,7 +16,6 @@ const initViewCache = function(dir, relativeDir){
     if(_fs.statSync(filePath).isDirectory()){
       initViewCache(filePath,  _path.join(relativeDir, fileName))
     }else{
-      console.log(_path.join(relativeDir, fileName))
       viewCache[_path.join(relativeDir, fileName)] = _fs.readFileSync(filePath, 'utf8')
     }
   })
