@@ -8,8 +8,7 @@ const _repeatHelp = require('./helper/repeat')
 const _sliceHelp = require('./helper/slice')
 const _stringify = require('./helper/stringify')
 const _scanExtHelp = require('./preview-helper/scan-ext')
-const _pubHelp = require("./preview-helper/pub")
-const _publibHelp = require('./preview-helper/publib')
+
 exports.normal = (Handlebars, helperReigerterQueue, pluginOptions)=>{
   //动态加载helper
   let fileList = _fs.readdirSync(_path.join(__dirname, "helper"))
