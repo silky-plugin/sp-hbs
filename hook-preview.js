@@ -16,7 +16,11 @@ const initViewCache = function(dir, relativeDir){
     if(_fs.statSync(filePath).isDirectory()){
       initViewCache(filePath,  _path.join(relativeDir, fileName))
     }else{
-      viewCache[_path.join(relativeDir, fileName)] = _fs.readFileSync(filePath, 'utf8')
+      let content = _fs.readFileSync(filePath, 'utf8')
+      viewCache[_path.join(relativeDir, fileName)] = {
+        fn: _handlebars.compile(content),
+        content: content
+      }
     }
   })
 }
@@ -53,14 +57,13 @@ module.exports = (cli, _DefaultSetting)=>{
     }
     //替换路径为hbs
     let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
-    let fileContent = viewCache[relativeFilePath.replace(/(html)$/,'hbs')]
-    _getPageData(cli, fileContent, data, realFilePath, relativeFilePath, originDataConfig, (err, pageData)=>{
+    let fileTemplate = viewCache[relativeFilePath.replace(/(html)$/,'hbs')]
+    _getPageData(cli, fileTemplate.content, data, realFilePath, relativeFilePath, originDataConfig, (err, pageData)=>{
       if(err){
         return cb(err)
       }
       try{
-        let template = _handlebars.compile(fileContent)
-        let html = template(pageData)
+        let html = fileTemplate.fn(pageData)
         data.status = 200
         cb(null, html)
       }catch(e){
