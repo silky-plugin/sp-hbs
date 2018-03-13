@@ -3,7 +3,7 @@ const _handlebars = require('handlebars');
 const _path = require('path')
 const _ = require('lodash');
 const _fs = require('fs')
-const _getPageData = require('./getPageData')
+const _getPageData = require('./getPreviewPageData')
 var viewCache = {}
 
 const initViewCache = function(dir, relativeDir){
@@ -39,11 +39,11 @@ module.exports = (cli, _DefaultSetting)=>{
   }
   initViewCache(viewDir, "/")
 
-  cli.registerHook('preview:compile', (req, data, content, cb)=>{
+  cli.registerHook('preview:compile', async (req, data, content)=>{
     let pathname = data.realPath;
     //如果不需要编译
     if(!isNeedCompile(pathname)){
-      return cb(null, content)
+      return content
     }
     let templateRoot =  _DefaultSetting.root || "";
     let fakeFilePath = _path.join(viewDir, templateRoot, pathname);
@@ -58,17 +58,9 @@ module.exports = (cli, _DefaultSetting)=>{
     //替换路径为hbs
     let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
     let fileTemplate = viewCache[relativeFilePath.replace(/(html)$/,'hbs')]
-    _getPageData(cli, fileTemplate.content, data, realFilePath, relativeFilePath, originDataConfig, (err, pageData)=>{
-      if(err){
-        return cb(err)
-      }
-      try{
-        let html = fileTemplate.fn(pageData)
-        data.status = 200
-        cb(null, html)
-      }catch(e){
-        cb(e)
-      }
-    })
+    let pageData = await _getPageData(cli, fileTemplate.content, data, realFilePath, relativeFilePath, originDataConfig)
+    let html = fileTemplate.fn(pageData)
+    data.status = 200
+    return html
   })
 }
