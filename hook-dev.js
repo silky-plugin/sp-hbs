@@ -3,6 +3,8 @@ const _ = require('lodash');
 const _getCompileContent = require('./getCompileContent');
 const _handlebars = require('handlebars');
 const _path = require('path')
+const _getPageData = require('./getPreviewPageData')
+const _fs = require('fs')
 module.exports = (cli, _DefaultSetting)=>{
   //判断该文件是否需要处理
   let isNeedCompile = (pathname)=>{
@@ -12,11 +14,13 @@ module.exports = (cli, _DefaultSetting)=>{
   
   //加载handlebars  helper
   _helper.normal(_handlebars, cli.ext['hbs'], _DefaultSetting);
-  cli.registerHook('route:didRequest', (req, data, content, cb)=>{
+
+
+  cli.registerHook('route:didRequest', async (req, data, content)=>{
     let pathname = data.realPath;
     //如果不需要编译
     if(!isNeedCompile(pathname)){
-      return cb(null, content)
+      return content
     }
     let templateRoot =  _DefaultSetting.root || "";
     let fakeFilePath = _path.join(cli.cwd(), templateRoot, pathname);
@@ -30,26 +34,28 @@ module.exports = (cli, _DefaultSetting)=>{
     }
     //替换路径为hbs
     let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
-    _getCompileContent(cli, data, realFilePath, relativeFilePath, originDataConfig, (error, data, content)=>{
-      if(error){
-        cli.log.error(`出错文件: ${realFilePath}`)
-        return cb(error)
-      };
-      //交给下一个处理器
-      cb(null, content)
-    })
+
+    if(!_fs.existsSync(realFilePath)){
+      return content
+    }
+    let fileContent = _fs.readFileSync(realFilePath, 'utf8')
+    let pageData = await _getPageData(cli, fileContent, data, realFilePath, relativeFilePath, originDataConfig)
+    let template = _handlebars.compile(fileContent)
+    data.status = 200
+    return template(pageData)
   },1)
+
   //响应模版下的文件
-  cli.registerHook(['route:dir', 'preview:dir'], (path, data, next)=>{
+  cli.registerHook(['route:dir', 'preview:dir'], async (path, data)=>{
     let templateRoot =  _DefaultSetting.root || "/";
     if(path.indexOf(templateRoot) != 0){
-      return next()
+      return
     }
     for(let i = 0, length = data.fileArray.length; i < length; i++){
       let fileData = data.fileArray[i];
       if(fileData.isDir){continue};
       data.fileArray[i].href = fileData.href.substring(templateRoot.length).replace(/(hbs)$/, "html")
     }
-    next()
+    return
   }, 50)
 }

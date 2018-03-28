@@ -4,28 +4,31 @@ const _getCompileContent = require('./getCompileContent');
 const _fs = require('fs-extra');
 const _path = require('path')
 const _handlebars = require('handlebars');
+const _getPageData = require('./getPreviewPageData')
+
 module.exports = (cli, _DefaultSetting)=>{
   //加载handlebars  helper
   _helper.normal(_handlebars, cli.ext['hbs'], _DefaultSetting);
-  cli.registerHook('build:doCompile', (buildConfig, data, content, cb)=>{
+  cli.registerHook('build:doCompile', async (buildConfig, data, content)=>{
     let inputFilePath = data.inputFilePath;
     if(!/(\.hbs)$/.test(inputFilePath)){
-      return cb(null, content)
+      return content
     }
-    _getCompileContent(cli, data, inputFilePath, data.inputFileRelativePath, _DefaultSetting.dataConfig, (error, resultData, content)=>{
-      if(error){
-        return  cb(error);
-      }
-      _.extend(data, resultData);
-      if(data.status == 200){
-        data.outputFilePath = data.outputFilePath.replace(/(hbs)$/, "html")
-        data.outputFileRelativePath = data.outputFileRelativePath.replace(/(hbs)$/, "html")
-      }
-      cb(error, content);
-    })
+
+    if(!_fs.existsSync(inputFilePath)){
+      return content
+    }
+    let fileContent = _fs.readFileSync(inputFilePath, "utf8")
+    let pageData = await _getPageData(cli, fileContent, data, realFilePath, relativeFilePath, originDataConfig)
+    let template = _handlebars.compile(fileContent)
+    let html = template(pageData)
+    crossData.status = 200
+    data.outputFilePath = data.outputFilePath.replace(/(hbs)$/, "html")
+    data.outputFileRelativePath = data.outputFileRelativePath.replace(/(hbs)$/, "html")
+    return html
   }, 1)
 
-  cli.registerHook('build:end', (buildConfig, cb)=>{
+  cli.registerHook('build:end', async (buildConfig)=>{
     for(let key in cli.options.pluginsConfig){
       if(key.indexOf('sp') == 0){
         continue
@@ -37,6 +40,6 @@ module.exports = (cli, _DefaultSetting)=>{
         cli.log.info(`pub modules copy dir '${key}/image' to '/image/${key}'`)
       } 
     }
-    cb(null)
+    return
   }, 1)
 }

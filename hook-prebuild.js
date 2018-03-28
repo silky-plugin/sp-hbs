@@ -4,8 +4,7 @@ const _pubImport = require('./prebuild/import')
 const _ = require('lodash');
 
 module.exports = (cli, pluginOptions)=>{
-  cli.registerHook('precompile:include', (buildConfig, content, finish)=>{
-    // cb(null, `hbs precompile:${fileItem.fileName}`)
+  cli.registerHook('precompile:include', async (buildConfig, content)=>{
      let pubReg = /\{\{\s*pub\s+["']?([^}"']+)["']?\}\}/
      let publibReg = /\{\{\s*publib\s+["']?([^}"']+)["']?\}\}/
      let importReg = /\{\{\s*import\s+["']?([^}"']+)["']?\}\}/
@@ -56,12 +55,11 @@ module.exports = (cli, pluginOptions)=>{
          importExists = false
        }
      }
-     if(errQueue.length){
+    if(errQueue.length){
        console.log(errQueue)
-       finish("errQueue", content)
-     }else{
-       finish(null, content)
-     }
+       throw new Error("errQueue")
+    }
+    return content
   })
 }
 
