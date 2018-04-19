@@ -1,6 +1,5 @@
 const _helper = require('./helper');
 const _ = require('lodash');
-const _getCompileContent = require('./getCompileContent');
 const _handlebars = require('handlebars');
 const _path = require('path')
 const _getPageData = require('./getPreviewPageData')
@@ -46,7 +45,7 @@ module.exports = (cli, _DefaultSetting)=>{
   },1)
 
   //响应模版下的文件
-  cli.registerHook(['route:dir', 'preview:dir'], async (path, data)=>{
+  cli.registerHook('route:dir', async (path, data)=>{
     let templateRoot =  _DefaultSetting.root || "/";
     if(path.indexOf(templateRoot) != 0){
       return
