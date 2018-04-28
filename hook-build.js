@@ -13,15 +13,14 @@ module.exports = (cli, _DefaultSetting)=>{
     if(!/(\.hbs)$/.test(inputFilePath)){
       return content
     }
-
     if(!_fs.existsSync(inputFilePath)){
       return content
     }
     let fileContent = _fs.readFileSync(inputFilePath, "utf8")
-    let pageData = await _getPageData(cli, fileContent, data, realFilePath, relativeFilePath, originDataConfig)
+    let pageData = await _getPageData(cli, fileContent, data, inputFilePath, data.inputFileRelativePath,  Object.assign({}, _DefaultSetting.dataConfig))
     let template = _handlebars.compile(fileContent)
     let html = template(pageData)
-    crossData.status = 200
+    data.status = 200
     data.outputFilePath = data.outputFilePath.replace(/(hbs)$/, "html")
     data.outputFileRelativePath = data.outputFileRelativePath.replace(/(hbs)$/, "html")
     return html
