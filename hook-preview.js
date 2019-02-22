@@ -10,6 +10,7 @@ const initViewCache = function(dir, relativeDir){
   if(!_fs.existsSync(dir)){
     return []
   }
+  console.log("开始刷新缓存")
   let files = _fs.readdirSync(dir)
   files.forEach((fileName)=>{
     let filePath = _path.join(dir, fileName);
@@ -17,12 +18,20 @@ const initViewCache = function(dir, relativeDir){
       initViewCache(filePath,  _path.join(relativeDir, fileName))
     }else{
       let content = _fs.readFileSync(filePath, 'utf8')
+      let result = /\{\{\!\-\-\s*PAGE_DATA\s*[:]\s*(.+)\s*\-\-\}\}/g.exec(content)
+      let dataURL = false;
+          //获取首个匹配项
+      if(result && result[1]){
+        dataURL = result[1].replace(/\s/g, "")
+      }
       viewCache[_path.join(relativeDir, fileName)] = {
         fn: _handlebars.compile(content),
-        content: content
+        dataURL: dataURL
       }
+      console.log(`缓存 ${fileName} ...`)
     }
   })
+  console.log("刷新缓存完成")
 }
 
 module.exports = (cli, _DefaultSetting)=>{
@@ -38,7 +47,9 @@ module.exports = (cli, _DefaultSetting)=>{
     viewDir = _path.join(cli.cwd(), viewDir)
   }
   initViewCache(viewDir, "/")
-
+  cli.registerHook('preview:project:update', ()=>{
+    initViewCache(viewDir, "/")
+  })
   cli.registerHook('preview:compile', async (req, data, content)=>{
     let pathname = data.realPath;
     //如果不需要编译
@@ -58,7 +69,7 @@ module.exports = (cli, _DefaultSetting)=>{
     //替换路径为hbs
     let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
     let fileTemplate = viewCache[relativeFilePath.replace(/(html)$/,'hbs')]
-    let pageData = await _getPageData(cli, fileTemplate.content, data, realFilePath, relativeFilePath, originDataConfig)
+    let pageData = await _getPageData(cli, fileTemplate.dataURL, data, realFilePath, relativeFilePath, originDataConfig)
     let html = fileTemplate.fn(pageData)
     data.status = 200
     return html

@@ -6,7 +6,7 @@ const _querystring = require('querystring');
 const _handlebars = require('handlebars');
 
 //获取页面对应的数据地址
-function getDataMap(inputFileRelativePathname, fileContent, dataConfig){
+function getDataMap(inputFileRelativePathname, contentDataURL, dataConfig){
   let dataMap = dataConfig['dataMap'];
   inputFileRelativePathname = inputFileRelativePathname.replace(_path.extname(inputFileRelativePathname), "")
   let dataUrl = dataMap[inputFileRelativePathname];
@@ -14,20 +14,7 @@ function getDataMap(inputFileRelativePathname, fileContent, dataConfig){
   if(dataUrl){
     return _path.join(dataConfig.baseUrl || "", dataUrl)
   }
-  // ---- 看文件中是否存在地址映射
-  let reg = dataConfig.dataRegexp || /\{\{\!\-\-\s*PAGE_DATA\s*[:]\s*(.+)\s*\-\-\}\}/g;
-
-  if(_.isFunction(reg)){
-    return reg(fileContent)
-  }
-
-  let result = reg.exec(fileContent)
-  let dataUrlInContent = "";
-  //获取首个匹配项
-  if(result && result[1]){
-    return result[1].replace(/\s/g, "")
-  }
-  return false
+  return contentDataURL
 }
 
 //判断是否是url
@@ -81,7 +68,7 @@ function compileURL(dataURL, data){
   })
 }
 
-module.exports =  async function(cli, fileContent, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, cb){
+module.exports =  async function(cli, contentDataURL, crossData, inputFileRealPath, inputFileRelativePathname, dataConfig, cb){
   //获取全局变量
   let globalVar = {}
   globalVar[dataConfig.globalRoot] = dataConfig.global;
@@ -95,7 +82,7 @@ module.exports =  async function(cli, fileContent, crossData, inputFileRealPath,
     return _.extend(globalVar, dataConfig.formatPageData(inputFileRealPath, crossData.pageData))
   }
   //获取页面相关的数据地址
-  let dataURL = getDataMap(inputFileRelativePathname, fileContent, dataConfig)
+  let dataURL = getDataMap(inputFileRelativePathname, contentDataURL, dataConfig)
    //不含数据地址
    if(!dataURL){
     return globalVar
