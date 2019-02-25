@@ -10,7 +10,6 @@ const initViewCache = function(dir, relativeDir){
   if(!_fs.existsSync(dir)){
     return []
   }
-  console.log("开始刷新缓存")
   let files = _fs.readdirSync(dir)
   files.forEach((fileName)=>{
     let filePath = _path.join(dir, fileName);
@@ -31,7 +30,6 @@ const initViewCache = function(dir, relativeDir){
       console.log(`缓存 ${fileName} ...`)
     }
   })
-  console.log("刷新缓存完成")
 }
 
 module.exports = (cli, _DefaultSetting)=>{
@@ -46,9 +44,13 @@ module.exports = (cli, _DefaultSetting)=>{
   if(!_path.isAbsolute(viewDir)){
     viewDir = _path.join(cli.cwd(), viewDir)
   }
+  console.log("开始缓存")
   initViewCache(viewDir, "/")
+  console.log("缓存完成")
   cli.registerHook('preview:project:update', ()=>{
+    console.log("开始刷新缓存...")
     initViewCache(viewDir, "/")
+    console.log("刷新缓存完成")
   })
   cli.registerHook('preview:compile', async (req, data, content)=>{
     let pathname = data.realPath;
