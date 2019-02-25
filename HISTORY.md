@@ -1,4 +1,8 @@
 ### HISTORY
+v1.5.0-rc1
+
+增加预览环境下的文件缓存刷新， hook 为 `preview:project:update`
+
 v1.4.9-beta
 增加编译页面数据获取途径
 
