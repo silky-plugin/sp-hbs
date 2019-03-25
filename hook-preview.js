@@ -71,7 +71,17 @@ module.exports = (cli, _DefaultSetting)=>{
     //替换路径为hbs
     let realFilePath = fakeFilePath.replace(/(html)$/,'hbs')
     let fileTemplate = viewCache[relativeFilePath.replace(/(html)$/,'hbs')]
-    let pageData = await _getPageData(cli, fileTemplate.dataURL, data, realFilePath, relativeFilePath, originDataConfig)
+    let pageData = {}
+
+    try{
+      pageData = await _getPageData(cli, fileTemplate.dataURL, data, realFilePath, relativeFilePath, originDataConfig)
+    }catch(e){
+      console.log(e)
+      let msg = `fetch Page Data get Error: \n ${fileTemplate.dataURL} \n ${originDataConfig}`
+      console.log(msg)
+      data.status = 500
+      return `fetch Page Data get Error`
+    }
     let html = fileTemplate.fn(pageData)
     data.status = 200
     return html

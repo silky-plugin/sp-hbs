@@ -1,4 +1,9 @@
 ### HISTORY
+
+v1.5.0-rc2
+
+修复数据抓取失败时，无法响应问题
+
 v1.5.0-rc1
 
 增加预览环境下的文件缓存刷新， hook 为 `preview:project:update`
